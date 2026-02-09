@@ -96,15 +96,16 @@ export function Tickets() {
     return (
         <div className="space-y-6">
             {/* Filters */}
-            <div className="flex flex-col md:flex-row gap-4 justify-between">
-                <div className="flex-1 max-w-md">
+            <div className="flex items-center gap-4 justify-between flex-wrap">
+                <div className="flex-1 min-w-[200px] max-w-md">
                     <SearchInput
                         placeholder="Search tickets..."
                         onSearch={setSearchQuery}
                     />
                 </div>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-3 flex-shrink-0">
                     <Select
+                        className="w-auto"
                         options={[
                             { value: 'all', label: 'All Status' },
                             { value: 'open', label: 'Open' },
@@ -117,6 +118,7 @@ export function Tickets() {
                         onChange={(e) => setStatusFilter(e.target.value)}
                     />
                     <Select
+                        className="w-auto"
                         options={[
                             { value: 'all', label: 'All Priority' },
                             { value: 'critical', label: 'Critical' },

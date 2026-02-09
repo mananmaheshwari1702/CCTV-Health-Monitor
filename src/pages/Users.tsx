@@ -64,10 +64,10 @@ export function Users() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row gap-4 justify-between">
-                <div className="flex-1 max-w-md"><SearchInput placeholder="Search users..." onSearch={setSearchQuery} /></div>
-                <div className="flex gap-3">
-                    <Select options={[{ value: 'all', label: 'All Roles' }, { value: 'admin', label: 'Admin' }, { value: 'manager', label: 'Manager' }, { value: 'technician', label: 'Technician' }, { value: 'viewer', label: 'Viewer' }]} value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} />
+            <div className="flex items-center gap-4 justify-between flex-wrap">
+                <div className="flex-1 min-w-[200px] max-w-md"><SearchInput placeholder="Search users..." onSearch={setSearchQuery} /></div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                    <Select className="w-auto" options={[{ value: 'all', label: 'All Roles' }, { value: 'admin', label: 'Admin' }, { value: 'manager', label: 'Manager' }, { value: 'technician', label: 'Technician' }, { value: 'viewer', label: 'Viewer' }]} value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} />
                     <Button icon={<Plus className="w-4 h-4" />} onClick={() => { setSelectedUser(null); setShowAddModal(true); }}>Add User</Button>
                 </div>
             </div>

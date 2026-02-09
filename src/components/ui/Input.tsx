@@ -92,10 +92,11 @@ export function Select({
     id,
     ...props
 }: SelectProps) {
-    const selectId = id || label?.toLowerCase().replace(/\s+/g, '-');
+    const selectId = id || label?.toLowerCase().replace(/\\s+/g, '-');
+    const hasCustomWidth = className.includes('w-');
 
     return (
-        <div className="w-full">
+        <div className={hasCustomWidth ? '' : 'w-full'}>
             {label && (
                 <label
                     htmlFor={selectId}
@@ -107,11 +108,12 @@ export function Select({
             <select
                 id={selectId}
                 className={`
-          w-full px-3.5 py-2.5 text-sm text-slate-900
+          px-3.5 py-2.5 text-sm text-slate-900
           bg-white border rounded-lg appearance-none
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
           ${error ? 'border-red-300' : 'border-slate-300'}
+          ${hasCustomWidth ? '' : 'w-full'}
           ${className}
         `}
                 {...props}
