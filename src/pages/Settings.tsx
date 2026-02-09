@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Save, Bell, Shield, Database, Globe, Mail, Smartphone, Monitor, Moon, Sun } from 'lucide-react';
 import { Card, CardHeader, CardBody, CardFooter, Button, Input, Select } from '../components/ui';
+import { useTheme } from '../hooks/useTheme';
 
 export function Settings() {
-    const [darkMode, setDarkMode] = useState(false);
+    const { darkMode, setDarkMode } = useTheme();
 
     return (
         <div className="space-y-6 max-w-4xl">
@@ -48,17 +49,17 @@ export function Settings() {
                             { icon: Mail, title: 'Daily Report Email', desc: 'Receive daily summary via email', enabled: false },
                             { icon: Smartphone, title: 'Mobile Push Notifications', desc: 'Push notifications to mobile app', enabled: false },
                         ].map((item) => (
-                            <div key={item.title} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                            <div key={item.title} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg transition-colors">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-2 bg-white rounded-lg shadow-sm"><item.icon className="w-5 h-5 text-slate-600" /></div>
+                                    <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm"><item.icon className="w-5 h-5 text-slate-600 dark:text-slate-400" /></div>
                                     <div>
-                                        <p className="font-medium text-slate-900">{item.title}</p>
-                                        <p className="text-sm text-slate-500">{item.desc}</p>
+                                        <p className="font-medium text-slate-900 dark:text-white">{item.title}</p>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400">{item.desc}</p>
                                     </div>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" className="sr-only peer" defaultChecked={item.enabled} />
-                                    <div className="w-11 h-6 bg-slate-300 peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
+                                    <div className="w-11 h-6 bg-slate-300 dark:bg-slate-700 peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
                                 </label>
                             </div>
                         ))}
@@ -70,17 +71,17 @@ export function Settings() {
             <Card>
                 <CardHeader>Appearance</CardHeader>
                 <CardBody>
-                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg transition-colors">
                         <div className="flex items-center gap-4">
-                            <div className="p-2 bg-white rounded-lg shadow-sm">{darkMode ? <Moon className="w-5 h-5 text-slate-600" /> : <Sun className="w-5 h-5 text-amber-500" />}</div>
+                            <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">{darkMode ? <Moon className="w-5 h-5 text-slate-600 dark:text-slate-400" /> : <Sun className="w-5 h-5 text-amber-500" />}</div>
                             <div>
-                                <p className="font-medium text-slate-900">Dark Mode</p>
-                                <p className="text-sm text-slate-500">Toggle dark mode theme</p>
+                                <p className="font-medium text-slate-900 dark:text-white">Dark Mode</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Toggle dark mode theme</p>
                             </div>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" className="sr-only peer" checked={darkMode} onChange={(e) => setDarkMode(e.target.checked)} />
-                            <div className="w-11 h-6 bg-slate-300 peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
+                            <div className="w-11 h-6 bg-slate-300 dark:bg-slate-700 peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
                         </label>
                     </div>
                 </CardBody>

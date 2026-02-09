@@ -29,8 +29,8 @@ export function Users() {
                         {user.avatar}
                     </div>
                     <div>
-                        <p className="font-medium text-slate-900">{user.name}</p>
-                        <p className="text-sm text-slate-500">{user.email}</p>
+                        <p className="font-medium text-slate-900 dark:text-white">{user.name}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
                     </div>
                 </div>
             ),
@@ -40,16 +40,16 @@ export function Users() {
             key: 'status', header: 'Status',
             render: (user: UserType) => <Badge variant={user.status === 'active' ? 'success' : 'neutral'} dot>{user.status}</Badge>,
         },
-        { key: 'sites', header: 'Sites', render: (user: UserType) => <span className="text-sm text-slate-600">{user.sites.length} sites</span> },
-        { key: 'lastLogin', header: 'Last Login', render: (user: UserType) => <span className="text-sm text-slate-500">{new Date(user.lastLogin).toLocaleDateString()}</span> },
+        { key: 'sites', header: 'Sites', render: (user: UserType) => <span className="text-sm text-slate-600 dark:text-slate-400">{user.sites.length} sites</span> },
+        { key: 'lastLogin', header: 'Last Login', render: (user: UserType) => <span className="text-sm text-slate-500 dark:text-slate-400">{new Date(user.lastLogin).toLocaleDateString()}</span> },
         {
             key: 'actions', header: '', align: 'right' as const,
             render: (user: UserType) => (
                 <div className="flex justify-end gap-1">
-                    <button className="p-2 hover:bg-slate-100 rounded-lg" onClick={(e) => { e.stopPropagation(); setSelectedUser(user); setShowAddModal(true); }}>
-                        <Edit className="w-4 h-4 text-slate-500" />
+                    <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); setSelectedUser(user); setShowAddModal(true); }}>
+                        <Edit className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                     </button>
-                    <button className="p-2 hover:bg-red-50 rounded-lg"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                    <button className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><Trash2 className="w-4 h-4 text-red-500 hover:text-red-600 dark:text-red-400" /></button>
                 </div>
             ),
         },
@@ -73,10 +73,10 @@ export function Users() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card padding="sm"><CardBody><div className="text-center"><p className="text-2xl font-bold text-slate-900">{users.length}</p><p className="text-sm text-slate-500">Total Users</p></div></CardBody></Card>
-                <Card padding="sm"><CardBody><div className="text-center"><p className="text-2xl font-bold text-emerald-600">{users.filter(u => u.status === 'active').length}</p><p className="text-sm text-slate-500">Active</p></div></CardBody></Card>
-                <Card padding="sm"><CardBody><div className="text-center"><p className="text-2xl font-bold text-red-600">{users.filter(u => u.role === 'admin').length}</p><p className="text-sm text-slate-500">Admins</p></div></CardBody></Card>
-                <Card padding="sm"><CardBody><div className="text-center"><p className="text-2xl font-bold text-blue-600">{users.filter(u => u.role === 'technician').length}</p><p className="text-sm text-slate-500">Technicians</p></div></CardBody></Card>
+                <Card padding="sm"><CardBody><div className="text-center"><p className="text-2xl font-bold text-slate-900 dark:text-white">{users.length}</p><p className="text-sm text-slate-500 dark:text-slate-400">Total Users</p></div></CardBody></Card>
+                <Card padding="sm"><CardBody><div className="text-center"><p className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">{users.filter(u => u.status === 'active').length}</p><p className="text-sm text-slate-500 dark:text-slate-400">Active</p></div></CardBody></Card>
+                <Card padding="sm"><CardBody><div className="text-center"><p className="text-2xl font-bold text-red-600 dark:text-red-500">{users.filter(u => u.role === 'admin').length}</p><p className="text-sm text-slate-500 dark:text-slate-400">Admins</p></div></CardBody></Card>
+                <Card padding="sm"><CardBody><div className="text-center"><p className="text-2xl font-bold text-blue-600 dark:text-blue-500">{users.filter(u => u.role === 'technician').length}</p><p className="text-sm text-slate-500 dark:text-slate-400">Technicians</p></div></CardBody></Card>
             </div>
 
             <Table data={filteredUsers} columns={columns} keyExtractor={(user) => user.id} emptyMessage="No users found" />
@@ -86,11 +86,11 @@ export function Users() {
                 <CardBody>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {rolePermissions.map((r) => (
-                            <div key={r.role} className="p-4 bg-slate-50 rounded-lg border border-slate-100">
-                                <h4 className="font-semibold text-slate-900">{r.role}</h4>
-                                <p className="text-sm text-slate-500 mt-1">{r.desc}</p>
+                            <div key={r.role} className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800">
+                                <h4 className="font-semibold text-slate-900 dark:text-white">{r.role}</h4>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{r.desc}</p>
                                 <div className="mt-3 flex flex-wrap gap-1">
-                                    {r.perms.map((p) => <span key={p} className="px-2 py-0.5 bg-white border border-slate-200 rounded text-xs text-slate-600">{p}</span>)}
+                                    {r.perms.map((p) => <span key={p} className="px-2 py-0.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs text-slate-600 dark:text-slate-300">{p}</span>)}
                                 </div>
                             </div>
                         ))}

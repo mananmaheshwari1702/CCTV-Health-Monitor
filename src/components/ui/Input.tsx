@@ -30,12 +30,12 @@ export function Input({
             <input
                 id={inputId}
                 className={`
-          w-full px-3.5 py-2.5 text-sm text-slate-900
-          bg-white border rounded-lg
+          w-full px-3.5 py-2.5 text-sm text-slate-900 dark:text-white
+          bg-white dark:bg-slate-800 border rounded-lg
           placeholder:text-slate-400
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
-          ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-300'}
+          ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 dark:border-slate-600'}
           ${className}
         `}
                 {...props}
@@ -65,8 +65,8 @@ export function SearchInput({
                 type="text"
                 placeholder={placeholder}
                 className={`
-          w-full pl-10 pr-4 py-2.5 text-sm text-slate-900
-          bg-white border border-slate-300 rounded-lg
+          w-full pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white
+          bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg
           placeholder:text-slate-400
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           ${className}
@@ -108,11 +108,11 @@ export function Select({
             <select
                 id={selectId}
                 className={`
-          px-3.5 py-2.5 text-sm text-slate-900
-          bg-white border rounded-lg appearance-none
+          px-3.5 py-2.5 text-sm text-slate-900 dark:text-white
+          bg-white dark:bg-slate-800 border rounded-lg appearance-none
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
-          ${error ? 'border-red-300' : 'border-slate-300'}
+          ${error ? 'border-red-300' : 'border-slate-300 dark:border-slate-600'}
           ${hasCustomWidth ? '' : 'w-full'}
           ${className}
         `}
@@ -156,13 +156,13 @@ export function Textarea({
             <textarea
                 id={textareaId}
                 className={`
-          w-full px-3.5 py-2.5 text-sm text-slate-900
-          bg-white border rounded-lg
+          w-full px-3.5 py-2.5 text-sm text-slate-900 dark:text-white
+          bg-white dark:bg-slate-800 border rounded-lg
           placeholder:text-slate-400
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
           resize-y min-h-[100px]
-          ${error ? 'border-red-300' : 'border-slate-300'}
+          ${error ? 'border-red-300' : 'border-slate-300 dark:border-slate-600'}
           ${className}
         `}
                 {...props}

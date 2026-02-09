@@ -30,9 +30,9 @@ export function Card({
     padding = 'md',
 }: CardProps) {
     const variantClasses = {
-        default: 'bg-white border border-slate-200',
-        elevated: 'bg-white shadow-lg border border-slate-100',
-        bordered: 'bg-white border border-slate-300',
+        default: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
+        elevated: 'bg-white dark:bg-slate-800 shadow-lg border border-slate-100 dark:border-slate-700',
+        bordered: 'bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700',
     };
 
     const paddingClasses = {
@@ -54,7 +54,7 @@ export function Card({
 export function CardHeader({ children, className = '', action }: CardHeaderProps) {
     return (
         <div className={`flex items-center justify-between mb-4 ${className}`}>
-            <div className="text-lg font-semibold text-slate-900">{children}</div>
+            <div className="text-lg font-semibold text-slate-900 dark:text-white">{children}</div>
             {action && <div>{action}</div>}
         </div>
     );
@@ -66,7 +66,7 @@ export function CardBody({ children, className = '' }: CardBodyProps) {
 
 export function CardFooter({ children, className = '' }: CardFooterProps) {
     return (
-        <div className={`mt-4 pt-4 border-t border-slate-100 ${className}`}>
+        <div className={`mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 ${className}`}>
             {children}
         </div>
     );

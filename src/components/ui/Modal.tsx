@@ -80,23 +80,23 @@ export function Modal({
             <div
                 ref={modalRef}
                 tabIndex={-1}
-                className={`relative w-full ${sizeClasses[size]} bg-white rounded-2xl shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-200`}
+                className={`relative w-full ${sizeClasses[size]} bg-white dark:bg-slate-900 rounded-2xl shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-200 border border-slate-200 dark:border-slate-800`}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={title ? 'modal-title' : undefined}
             >
                 {/* Header */}
                 {(title || showClose) && (
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
                         {title && (
-                            <h2 id="modal-title" className="text-lg font-semibold text-slate-900">
+                            <h2 id="modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">
                                 {title}
                             </h2>
                         )}
                         {showClose && (
                             <button
                                 onClick={onClose}
-                                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                                className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                                 aria-label="Close modal"
                             >
                                 <X className="w-5 h-5" />
@@ -112,7 +112,7 @@ export function Modal({
 
                 {/* Footer */}
                 {footer && (
-                    <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-2xl">
+                    <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 rounded-b-2xl">
                         {footer}
                     </div>
                 )}
@@ -159,7 +159,7 @@ export function ConfirmModal({
                 <div className="flex justify-end gap-3">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+                        className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700"
                     >
                         {cancelText}
                     </button>
@@ -175,7 +175,7 @@ export function ConfirmModal({
                 </div>
             }
         >
-            <p className="text-slate-600">{message}</p>
+            <p className="text-slate-600 dark:text-slate-400">{message}</p>
         </Modal>
     );
 }

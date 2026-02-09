@@ -55,8 +55,8 @@ export function Tickets() {
             header: 'Title',
             render: (ticket: Ticket) => (
                 <div>
-                    <p className="font-medium text-slate-900">{ticket.title}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{ticket.siteName}</p>
+                    <p className="font-medium text-slate-900 dark:text-white">{ticket.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{ticket.siteName}</p>
                 </div>
             ),
         },
@@ -75,10 +75,10 @@ export function Tickets() {
             header: 'Assignee',
             render: (ticket: Ticket) => (
                 <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-xs font-medium text-slate-600">
+                    <div className="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-xs font-medium text-slate-600 dark:text-slate-300">
                         {ticket.assignee.split(' ').map(n => n[0]).join('')}
                     </div>
-                    <span className="text-sm text-slate-700">{ticket.assignee}</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{ticket.assignee}</span>
                 </div>
             ),
         },
@@ -140,38 +140,38 @@ export function Tickets() {
                 <Card padding="sm">
                     <CardBody>
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-slate-900">{tickets.length}</p>
-                            <p className="text-sm text-slate-500">Total Tickets</p>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-white">{tickets.length}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Total Tickets</p>
                         </div>
                     </CardBody>
                 </Card>
                 <Card padding="sm">
                     <CardBody>
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-red-600">
+                            <p className="text-2xl font-bold text-red-600 dark:text-red-500">
                                 {tickets.filter((t) => t.status === 'open').length}
                             </p>
-                            <p className="text-sm text-slate-500">Open</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Open</p>
                         </div>
                     </CardBody>
                 </Card>
                 <Card padding="sm">
                     <CardBody>
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-blue-600">
+                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-500">
                                 {tickets.filter((t) => t.status === 'in_progress').length}
                             </p>
-                            <p className="text-sm text-slate-500">In Progress</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">In Progress</p>
                         </div>
                     </CardBody>
                 </Card>
                 <Card padding="sm">
                     <CardBody>
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-emerald-600">
+                            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">
                                 {tickets.filter((t) => t.status === 'resolved' || t.status === 'closed').length}
                             </p>
-                            <p className="text-sm text-slate-500">Resolved</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Resolved</p>
                         </div>
                     </CardBody>
                 </Card>
@@ -188,18 +188,18 @@ export function Tickets() {
 
             {/* Ticket Detail Sidebar */}
             {selectedTicket && (
-                <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl z-50 overflow-y-auto">
+                <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white dark:bg-slate-900 shadow-2xl z-50 overflow-y-auto border-l border-slate-200 dark:border-slate-800">
                     <div className="p-6">
                         <div className="flex items-start justify-between mb-6">
                             <div>
-                                <p className="text-sm font-mono text-slate-500">{selectedTicket.id}</p>
-                                <h2 className="text-lg font-semibold text-slate-900 mt-1">
+                                <p className="text-sm font-mono text-slate-500 dark:text-slate-400">{selectedTicket.id}</p>
+                                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mt-1">
                                     {selectedTicket.title}
                                 </h2>
                             </div>
                             <button
                                 onClick={() => setSelectedTicket(null)}
-                                className="p-2 hover:bg-slate-100 rounded-lg"
+                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 dark:text-slate-400"
                             >
                                 ✕
                             </button>
@@ -211,26 +211,26 @@ export function Tickets() {
                                 <TicketStatusBadge status={selectedTicket.status} />
                             </div>
 
-                            <div className="p-4 bg-slate-50 rounded-lg">
-                                <p className="text-sm text-slate-700">{selectedTicket.description}</p>
+                            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
+                                <p className="text-sm text-slate-700 dark:text-slate-300">{selectedTicket.description}</p>
                             </div>
 
                             <div className="space-y-3">
                                 <div className="flex items-center gap-3">
                                     <User className="w-4 h-4 text-slate-400" />
-                                    <span className="text-sm text-slate-600">
-                                        Assigned to <strong>{selectedTicket.assignee}</strong>
+                                    <span className="text-sm text-slate-600 dark:text-slate-300">
+                                        Assigned to <strong className="text-slate-900 dark:text-white">{selectedTicket.assignee}</strong>
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <Clock className="w-4 h-4 text-slate-400" />
-                                    <span className="text-sm text-slate-600">
+                                    <span className="text-sm text-slate-600 dark:text-slate-300">
                                         Created {new Date(selectedTicket.createdAt).toLocaleString()}
                                     </span>
                                 </div>
                             </div>
 
-                            <hr className="border-slate-200" />
+                            <hr className="border-slate-200 dark:border-slate-800" />
 
                             <div className="flex gap-2">
                                 <Button variant="primary" fullWidth>
