@@ -186,7 +186,7 @@ export function Tickets() {
 
             {/* Ticket Detail Sidebar */}
             {selectedTicket && (
-                <div className="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl z-50 overflow-y-auto">
+                <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl z-50 overflow-y-auto">
                     <div className="p-6">
                         <div className="flex items-start justify-between mb-6">
                             <div>

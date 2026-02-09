@@ -168,8 +168,8 @@ export function Pagination({
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
     return (
-        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-slate-200">
-            <div className="text-sm text-slate-500">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-white border-t border-slate-200">
+            <div className="text-sm text-slate-500 text-center sm:text-left">
                 Showing <span className="font-medium">{startItem}</span> to{' '}
                 <span className="font-medium">{endItem}</span> of{' '}
                 <span className="font-medium">{totalItems}</span> results
@@ -182,18 +182,32 @@ export function Pagination({
                 >
                     Previous
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                        key={page}
-                        onClick={() => onPageChange(page)}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-lg ${currentPage === page
-                            ? 'bg-blue-600 text-white'
-                            : 'text-slate-600 hover:bg-slate-100'
-                            }`}
-                    >
-                        {page}
-                    </button>
-                ))}
+                {/* Hide page numbers on mobile, show only on sm+ */}
+                <div className="hidden sm:flex items-center gap-1">
+                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                        // Show first 5 pages or adjust for current page position
+                        let page = i + 1;
+                        if (totalPages > 5 && currentPage > 3) {
+                            page = Math.min(currentPage - 2 + i, totalPages - 4 + i);
+                        }
+                        return (
+                            <button
+                                key={page}
+                                onClick={() => onPageChange(page)}
+                                className={`px-3 py-1.5 text-sm font-medium rounded-lg ${currentPage === page
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-slate-600 hover:bg-slate-100'
+                                    }`}
+                            >
+                                {page}
+                            </button>
+                        );
+                    })}
+                </div>
+                {/* Show current page indicator on mobile */}
+                <span className="sm:hidden text-sm text-slate-500">
+                    {currentPage} / {totalPages}
+                </span>
                 <button
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}

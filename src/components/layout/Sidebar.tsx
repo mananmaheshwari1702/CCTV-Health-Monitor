@@ -11,11 +11,14 @@ import {
     ChevronRight,
     Camera,
     Shield,
+    X,
 } from 'lucide-react';
 
 interface SidebarProps {
     collapsed: boolean;
     onToggle: () => void;
+    mobileOpen?: boolean;
+    onMobileClose?: () => void;
 }
 
 const navItems = [
@@ -27,16 +30,18 @@ const navItems = [
     { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose }: SidebarProps) {
     const location = useLocation();
 
     return (
         <aside
-            className={`fixed left-0 top-0 z-40 h-screen bg-slate-900 transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'
-                }`}
+            className={`fixed left-0 top-0 z-40 h-screen bg-slate-900 transition-all duration-300 
+                ${collapsed ? 'w-20' : 'w-64'}
+                ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} 
+                lg:translate-x-0`}
         >
             {/* Logo */}
-            <div className="flex items-center h-16 px-4 border-b border-slate-800">
+            <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800">
                 <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-xl">
                         <Camera className="w-5 h-5 text-white" />
@@ -50,6 +55,16 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                         </div>
                     )}
                 </div>
+                {/* Mobile close button */}
+                {mobileOpen && (
+                    <button
+                        onClick={onMobileClose}
+                        className="lg:hidden p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                        aria-label="Close menu"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                )}
             </div>
 
             {/* Navigation */}
@@ -64,8 +79,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                                 <NavLink
                                     to={item.path}
                                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive
-                                            ? 'bg-blue-600 text-white'
-                                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                                         }`}
                                 >
                                     <Icon className="w-5 h-5 flex-shrink-0" />
@@ -99,10 +114,10 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 </div>
             )}
 
-            {/* Collapse Toggle */}
+            {/* Collapse Toggle - hidden on mobile */}
             <button
                 onClick={onToggle}
-                className="absolute -right-3 top-20 flex items-center justify-center w-6 h-6 bg-slate-700 border border-slate-600 rounded-full text-slate-300 hover:bg-slate-600 hover:text-white transition-colors"
+                className="hidden lg:flex absolute -right-3 top-20 items-center justify-center w-6 h-6 bg-slate-700 border border-slate-600 rounded-full text-slate-300 hover:bg-slate-600 hover:text-white transition-colors"
             >
                 {collapsed ? (
                     <ChevronRight className="w-4 h-4" />
