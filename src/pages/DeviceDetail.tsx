@@ -23,7 +23,7 @@ import {
     Download,
     ChevronLeft,
     ChevronRight,
-    TicketPlus,
+    Tag,
 } from 'lucide-react';
 import {
     Card,
@@ -36,8 +36,10 @@ import {
     HealthBadge,
     Modal,
 } from '../components/ui';
+import { useData } from '../context/DataContext';
 import { devices, tickets, deviceCameras, deviceStatsData, healthTimelineEvents, generateRecordingCalendar } from '../data/mockData';
 import type { RecordingDay, HealthTimelineEvent as TimelineEvent } from '../types';
+
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 function formatDate(dateStr: string): string {
@@ -91,6 +93,8 @@ const severityBorder: Record<string, string> = {
 export function DeviceDetail() {
     const { deviceId } = useParams();
     const navigate = useNavigate();
+    const { addTicket } = useData();
+
     const [selectedRecording, setSelectedRecording] = useState<RecordingDay | null>(null);
     const [ticketCreated, setTicketCreated] = useState(false);
     const [selectedMonth, setSelectedMonth] = useState(() => new Date(2026, 1, 1)); // Feb 2026
@@ -107,6 +111,16 @@ export function DeviceDetail() {
         () => (deviceId ? generateRecordingCalendar(deviceId) : []),
         [deviceId]
     );
+
+    // Optimize lookup for recording data to prevent rendering lag/crashes
+    const recordingDataMap = useMemo(() => {
+        const map = new Map<string, RecordingDay>();
+        // Using O(N) only once here instead of O(N^2) during render
+        recordingData.forEach((r) => {
+            map.set(`${r.cameraId}-${r.date}`, r);
+        });
+        return map;
+    }, [recordingData]);
 
     // Build the date range for the selected month
     const dateRange = useMemo(() => {
@@ -167,6 +181,23 @@ export function DeviceDetail() {
             : 'bg-red-500';
 
     const handleCreateTicket = () => {
+        if (!selectedRecording || !device) return;
+
+        addTicket({
+            id: `tkt-${Date.now()}`,
+            title: `Missing Recording: ${selectedRecording.cameraName}`,
+            description: `Recording data missing for camera ${selectedRecording.cameraName} on ${formatDate(selectedRecording.date)}.`,
+            priority: 'medium',
+            status: 'open',
+            assignee: 'Unassigned',
+            deviceId: device.id,
+            deviceName: device.name,
+            siteName: device.siteName,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            comments: [],
+        });
+
         setTicketCreated(true);
         setTimeout(() => {
             setTicketCreated(false);
@@ -516,9 +547,8 @@ export function DeviceDetail() {
                                             </div>
                                             <div className="flex-1 grid gap-px" style={{ gridTemplateColumns: `repeat(${dateRange.length}, 1fr)` }}>
                                                 {dateRange.map((date) => {
-                                                    const entry = recordingData.find(
-                                                        (r) => r.cameraId === camId && r.date === date
-                                                    );
+                                                    // Optimized lookup using the map
+                                                    const entry = recordingDataMap.get(`${camId}-${date}`);
                                                     const status = entry?.status ?? 'no_data';
 
                                                     const cellColor =
@@ -563,36 +593,21 @@ export function DeviceDetail() {
                                 if (total === 0) return null;
                                 const available = monthEntries.filter(r => r.status === 'available').length;
                                 const missing = monthEntries.filter(r => r.status === 'missing').length;
-                                const noData = total - available - missing;
+                                // noData is implicit rest
                                 const pctAvail = Math.round((available / total) * 100);
                                 const pctMissing = Math.round((missing / total) * 100);
-                                const pctNoData = 100 - pctAvail - pctMissing;
                                 return (
                                     <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
                                         <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-                                            Monthly Summary
+                                            Monthly Summary (All Cameras)
                                         </p>
-                                        <div className="flex h-2.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
-                                            {pctAvail > 0 && (
-                                                <div className="bg-emerald-500 transition-all" style={{ width: `${pctAvail}%` }} />
-                                            )}
-                                            {pctMissing > 0 && (
-                                                <div className="bg-red-500 transition-all" style={{ width: `${pctMissing}%` }} />
-                                            )}
-                                            {pctNoData > 0 && (
-                                                <div className="bg-slate-300 dark:bg-slate-600 transition-all" style={{ width: `${pctNoData}%` }} />
-                                            )}
+                                        <div className="flex h-1.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
+                                            <div className="bg-emerald-500" style={{ width: `${pctAvail}%` }} />
+                                            <div className="bg-red-500" style={{ width: `${pctMissing}%` }} />
                                         </div>
-                                        <div className="flex items-center gap-4 mt-2">
-                                            <span className="text-xs text-slate-600 dark:text-slate-400">
-                                                <span className="font-medium text-emerald-600 dark:text-emerald-400">{pctAvail}%</span> Available
-                                            </span>
-                                            <span className="text-xs text-slate-600 dark:text-slate-400">
-                                                <span className="font-medium text-red-600 dark:text-red-400">{pctMissing}%</span> Missing
-                                            </span>
-                                            <span className="text-xs text-slate-600 dark:text-slate-400">
-                                                <span className="font-medium text-slate-500">{pctNoData}%</span> No Data
-                                            </span>
+                                        <div className="flex justify-between mt-1 text-[10px] text-slate-500">
+                                            <span>{pctAvail}% Available</span>
+                                            <span>{pctMissing}% Missing</span>
                                         </div>
                                     </div>
                                 );
@@ -683,7 +698,7 @@ export function DeviceDetail() {
                                 </>
                             ) : (
                                 <>
-                                    <TicketPlus className="w-4 h-4" />
+                                    <Tag className="w-4 h-4" />
                                     Create Ticket
                                 </>
                             )}

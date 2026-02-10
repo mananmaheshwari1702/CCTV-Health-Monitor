@@ -1,44 +1,89 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Filter,
+    MoreVertical,
     Plus,
     Search,
-    MoreVertical,
-    MessageSquare,
-    User,
+    Ticket,
+    CheckCircle,
     Clock,
+    AlertTriangle,
+    AlertCircle,
+    Trash2
 } from 'lucide-react';
 import {
     Card,
     CardHeader,
     CardBody,
-    Table,
+    Badge,
     Button,
-    SearchInput,
-    Modal,
     Input,
     Select,
-    Textarea,
-    PriorityBadge,
     TicketStatusBadge,
+    PriorityBadge,
+    Table,
+    SearchInput,
+    Modal,
+    Textarea
 } from '../components/ui';
-import { tickets } from '../data/mockData';
-import type { Ticket } from '../types';
+import { useData } from '../context/DataContext';
+import { Ticket as TicketType } from '../types';
+import { PermissionGuard } from '../components/auth/PermissionGuard';
 
 export function Tickets() {
-    const [searchQuery, setSearchQuery] = useState('');
+    const navigate = useNavigate();
+    const { tickets, addTicket, deleteTicket } = useData();
+    const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [priorityFilter, setPriorityFilter] = useState<string>('all');
-    const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
 
-    const filteredTickets = tickets.filter((ticket) => {
+    // New Ticket Form State
+    const [newTicket, setNewTicket] = useState({
+        title: '',
+        description: '',
+        priority: 'medium',
+        device: '',
+        site: 'Central Bank HQ'
+    });
+
+    const handleCreateTicket = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const ticket: TicketType = {
+            id: `TKT-${Math.floor(Math.random() * 10000)}`,
+            title: newTicket.title,
+            description: newTicket.description,
+            priority: newTicket.priority as any,
+            status: 'open',
+            deviceId: 'dev-001', // mock
+            deviceName: newTicket.device || 'Unknown Device',
+            siteName: newTicket.site,
+            assignee: 'Unassigned',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            comments: []
+        };
+
+        addTicket(ticket);
+        setShowCreateModal(false);
+        setNewTicket({ title: '', description: '', priority: 'medium', device: '', site: 'Central Bank HQ' });
+    };
+
+    const handleDeleteTicket = (ticketId: string) => {
+        if (window.confirm('Are you sure you want to delete this ticket? This action cannot be undone.')) {
+            deleteTicket(ticketId);
+        }
+    };
+
+    const filteredTickets = tickets.filter(ticket => {
         const matchesSearch =
-            ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            ticket.id.toLowerCase().includes(searchQuery.toLowerCase());
+            ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            ticket.id.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
-        const matchesPriority =
-            priorityFilter === 'all' || ticket.priority === priorityFilter;
+        const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
+
         return matchesSearch && matchesStatus && matchesPriority;
     });
 
@@ -46,14 +91,14 @@ export function Tickets() {
         {
             key: 'id',
             header: 'Ticket ID',
-            render: (ticket: Ticket) => (
+            render: (ticket: TicketType) => (
                 <span className="font-mono text-sm text-slate-600 dark:text-slate-400">{ticket.id}</span>
             ),
         },
         {
             key: 'title',
             header: 'Title',
-            render: (ticket: Ticket) => (
+            render: (ticket: TicketType) => (
                 <div>
                     <p className="font-medium text-slate-900 dark:text-white">{ticket.title}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-300 mt-0.5">{ticket.siteName}</p>
@@ -63,17 +108,17 @@ export function Tickets() {
         {
             key: 'priority',
             header: 'Priority',
-            render: (ticket: Ticket) => <PriorityBadge priority={ticket.priority} />,
+            render: (ticket: TicketType) => <PriorityBadge priority={ticket.priority} />,
         },
         {
             key: 'status',
             header: 'Status',
-            render: (ticket: Ticket) => <TicketStatusBadge status={ticket.status} />,
+            render: (ticket: TicketType) => <TicketStatusBadge status={ticket.status} />,
         },
         {
             key: 'assignee',
             header: 'Assignee',
-            render: (ticket: Ticket) => (
+            render: (ticket: TicketType) => (
                 <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-xs font-medium text-slate-600 dark:text-slate-300">
                         {ticket.assignee.split(' ').map(n => n[0]).join('')}
@@ -85,10 +130,29 @@ export function Tickets() {
         {
             key: 'createdAt',
             header: 'Created',
-            render: (ticket: Ticket) => (
+            render: (ticket: TicketType) => (
                 <span className="text-sm text-slate-500 dark:text-slate-400">
                     {new Date(ticket.createdAt).toLocaleDateString()}
                 </span>
+            ),
+        },
+        {
+            key: 'actions',
+            header: '',
+            align: 'right' as const,
+            render: (ticket: TicketType) => (
+                <PermissionGuard requiredRole={['admin', 'manager']}>
+                    <button
+                        className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors group"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTicket(ticket.id);
+                        }}
+                        title="Delete Ticket"
+                    >
+                        <Trash2 className="w-4 h-4 text-slate-400 group-hover:text-red-500 dark:text-slate-500 dark:group-hover:text-red-400" />
+                    </button>
+                </PermissionGuard>
             ),
         },
     ];
@@ -100,7 +164,7 @@ export function Tickets() {
                 <div className="flex-1 min-w-[200px] max-w-md">
                     <SearchInput
                         placeholder="Search tickets..."
-                        onSearch={setSearchQuery}
+                        onSearch={setSearchTerm}
                     />
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
@@ -129,9 +193,11 @@ export function Tickets() {
                         value={priorityFilter}
                         onChange={(e) => setPriorityFilter(e.target.value)}
                     />
-                    <Button icon={<Plus className="w-4 h-4" />} onClick={() => setShowCreateModal(true)}>
-                        Create Ticket
-                    </Button>
+                    <PermissionGuard requireManageTickets>
+                        <Button icon={<Plus className="w-4 h-4" />} onClick={() => setShowCreateModal(true)}>
+                            Create Ticket
+                        </Button>
+                    </PermissionGuard>
                 </div>
             </div>
 
@@ -182,124 +248,70 @@ export function Tickets() {
                 data={filteredTickets}
                 columns={columns}
                 keyExtractor={(ticket) => ticket.id}
-                onRowClick={(ticket) => setSelectedTicket(ticket)}
+                onRowClick={(ticket) => navigate(`/tickets/${ticket.id}`)}
                 emptyMessage="No tickets found"
             />
 
-            {/* Ticket Detail Sidebar */}
-            {selectedTicket && (
-                <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white dark:bg-slate-800 shadow-2xl z-50 overflow-y-auto border-l border-slate-200 dark:border-slate-700">
-                    <div className="p-6">
-                        <div className="flex items-start justify-between mb-6">
+            {/* Create Ticket Modal */}
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                        <h2 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Create New Ticket</h2>
+                        <form onSubmit={handleCreateTicket} className="space-y-4">
                             <div>
-                                <p className="text-sm font-mono text-slate-500 dark:text-slate-300">{selectedTicket.id}</p>
-                                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mt-1">
-                                    {selectedTicket.title}
-                                </h2>
+                                <label className="block text-sm font-medium mb-1 dark:text-slate-200">Title</label>
+                                <Input
+                                    value={newTicket.title}
+                                    onChange={e => setNewTicket({ ...newTicket, title: e.target.value })}
+                                    placeholder="Brief summary of the issue"
+                                    required
+                                />
                             </div>
-                            <button
-                                onClick={() => setSelectedTicket(null)}
-                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 dark:text-slate-400"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="flex gap-2">
-                                <PriorityBadge priority={selectedTicket.priority} />
-                                <TicketStatusBadge status={selectedTicket.status} />
+                            <div>
+                                <label className="block text-sm font-medium mb-1 dark:text-slate-200">Description</label>
+                                <Input
+                                    value={newTicket.description}
+                                    onChange={e => setNewTicket({ ...newTicket, description: e.target.value })}
+                                    placeholder="Detailed description"
+                                    required
+                                />
                             </div>
-
-                            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
-                                <p className="text-sm text-slate-700 dark:text-slate-300">{selectedTicket.description}</p>
-                            </div>
-
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-3">
-                                    <User className="w-4 h-4 text-slate-400" />
-                                    <span className="text-sm text-slate-600 dark:text-slate-300">
-                                        Assigned to <strong className="text-slate-900 dark:text-white">{selectedTicket.assignee}</strong>
-                                    </span>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-1 dark:text-slate-200">Device Name</label>
+                                    <Input
+                                        value={newTicket.device}
+                                        onChange={e => setNewTicket({ ...newTicket, device: e.target.value })}
+                                        placeholder="e.g. Lobby Cam"
+                                        required
+                                    />
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <Clock className="w-4 h-4 text-slate-400" />
-                                    <span className="text-sm text-slate-600 dark:text-slate-300">
-                                        Created {new Date(selectedTicket.createdAt).toLocaleString()}
-                                    </span>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1 dark:text-slate-200">Priority</label>
+                                    <select
+                                        className="w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-2 text-sm"
+                                        value={newTicket.priority}
+                                        onChange={e => setNewTicket({ ...newTicket, priority: e.target.value })}
+                                    >
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="critical">Critical</option>
+                                    </select>
                                 </div>
                             </div>
-
-                            <hr className="border-slate-200 dark:border-slate-800" />
-
-                            <div className="flex gap-2">
-                                <Button variant="primary" fullWidth>
-                                    Update Ticket
+                            <div className="flex justify-end gap-3 mt-6">
+                                <Button variant="outline" onClick={() => setShowCreateModal(false)} type="button">
+                                    Cancel
                                 </Button>
-                                <Button variant="outline" fullWidth>
-                                    Add Comment
+                                <Button variant="primary" type="submit">
+                                    Create Ticket
                                 </Button>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             )}
-
-            {/* Create Ticket Modal */}
-            <Modal
-                isOpen={showCreateModal}
-                onClose={() => setShowCreateModal(false)}
-                title="Create New Ticket"
-                size="lg"
-                footer={
-                    <div className="flex justify-end gap-3">
-                        <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-                            Cancel
-                        </Button>
-                        <Button onClick={() => setShowCreateModal(false)}>Create Ticket</Button>
-                    </div>
-                }
-            >
-                <div className="space-y-4">
-                    <Input label="Title" placeholder="Brief description of the issue" />
-                    <Textarea label="Description" placeholder="Detailed description..." />
-                    <div className="grid grid-cols-2 gap-4">
-                        <Select
-                            label="Priority"
-                            options={[
-                                { value: 'low', label: 'Low' },
-                                { value: 'medium', label: 'Medium' },
-                                { value: 'high', label: 'High' },
-                                { value: 'critical', label: 'Critical' },
-                            ]}
-                        />
-                        <Select
-                            label="Site"
-                            options={[
-                                { value: 'site-001', label: 'Downtown Mall' },
-                                { value: 'site-002', label: 'Central Bank HQ' },
-                                { value: 'site-003', label: 'Airport Terminal B' },
-                            ]}
-                        />
-                    </div>
-                    <Select
-                        label="Device"
-                        options={[
-                            { value: 'dev-001', label: 'Entrance Cam 1' },
-                            { value: 'dev-002', label: 'Parking Lot NVR' },
-                            { value: 'dev-003', label: 'Lobby Cam 2' },
-                        ]}
-                    />
-                    <Select
-                        label="Assignee"
-                        options={[
-                            { value: 'user-001', label: 'John Smith' },
-                            { value: 'user-002', label: 'Sarah Johnson' },
-                            { value: 'user-003', label: 'Mike Wilson' },
-                        ]}
-                    />
-                </div>
-            </Modal>
         </div>
     );
 }

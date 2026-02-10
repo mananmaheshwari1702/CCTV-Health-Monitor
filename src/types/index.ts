@@ -83,10 +83,23 @@ export interface Ticket {
     assignee: string;
     createdAt: string;
     updatedAt: string;
+    comments?: TicketComment[];
+}
+
+export interface TicketComment {
+    id: string;
+    ticketId: string;
+    userId: string;
+    userName: string;
+    userAvatar?: string;
+    content: string;
+    createdAt: string;
 }
 
 // User Types
 export type UserRole = 'admin' | 'manager' | 'technician' | 'viewer';
+
+export type UserStatus = 'active' | 'inactive';
 
 export interface User {
     id: string;
@@ -94,7 +107,7 @@ export interface User {
     email: string;
     role: UserRole;
     avatar: string;
-    status: 'active' | 'inactive';
+    status: UserStatus;
     lastLogin: string;
     sites: string[];
 }
@@ -112,9 +125,12 @@ export interface DashboardStats {
 }
 
 // Alert Types
+export type AlertStatus = 'active' | 'acknowledged' | 'resolved';
+
 export interface Alert {
     id: string;
     type: 'error' | 'warning' | 'info';
+    status: AlertStatus;
     message: string;
     deviceId: string;
     deviceName: string;
@@ -130,4 +146,25 @@ export interface Report {
     description: string;
     lastGenerated: string;
     schedule: 'daily' | 'weekly' | 'monthly' | 'on_demand';
+}
+
+// App Settings Update
+export interface AppSettings {
+    organizationName: string;
+    systemEmail: string;
+    timezone: string;
+    dateFormat: string;
+    notifications: {
+        deviceOffline: boolean;
+        securityAlerts: boolean;
+        storageWarnings: boolean;
+        dailyReports: boolean;
+        mobilePush: boolean;
+    };
+    system: {
+        healthCheckInterval: number;
+        sessionTimeout: number;
+        maxRecordingGap: number;
+        alertThreshold: number;
+    };
 }

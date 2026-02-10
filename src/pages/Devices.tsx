@@ -7,6 +7,8 @@ import {
     Server,
     Monitor,
     Network,
+    Plus,
+    Trash2
 } from 'lucide-react';
 import {
     Card,
@@ -18,9 +20,12 @@ import {
     Select,
     Table,
     Pagination,
+    Button,
+    Input
 } from '../components/ui';
-import { devices, sites } from '../data/mockData';
+import { useData } from '../context/DataContext';
 import type { Device } from '../types';
+import { PermissionGuard } from '../components/auth/PermissionGuard';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -32,7 +37,7 @@ const typeIcons: Record<Device['type'], React.ReactNode> = {
 };
 
 function timeAgo(dateStr: string): string {
-    const now = new Date('2026-02-09T14:15:00Z');
+    const now = new Date();
     const past = new Date(dateStr);
     const diffMs = now.getTime() - past.getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -48,12 +53,59 @@ function timeAgo(dateStr: string): string {
 
 export function Devices() {
     const navigate = useNavigate();
+    const { devices, sites, addDevice, deleteDevice } = useData();
     const [searchQuery, setSearchQuery] = useState('');
     const [siteFilter, setSiteFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [sortColumn, setSortColumn] = useState<string>('name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    const [showAddModal, setShowAddModal] = useState(false);
+
+    // New Device Form State
+    const [newDevice, setNewDevice] = useState({
+        name: '',
+        type: 'camera',
+        siteId: sites[0]?.id || '',
+        ipAddress: '',
+        model: ''
+    });
+
+    const handleCreateDevice = (e: React.FormEvent) => {
+        e.preventDefault();
+        const selectedSite = sites.find(s => s.id === newDevice.siteId);
+
+        const device: Device = {
+            id: `dev-${Date.now()}`,
+            name: newDevice.name,
+            siteId: newDevice.siteId,
+            siteName: selectedSite?.name || 'Unknown',
+            type: newDevice.type as any,
+            status: 'online',
+            health: 'healthy',
+            recordingStatus: 'recording',
+            lastSeen: new Date().toISOString(),
+            ipAddress: newDevice.ipAddress,
+            model: newDevice.model,
+            firmware: '1.0.0'
+        };
+
+        addDevice(device);
+        setShowAddModal(false);
+        setNewDevice({
+            name: '',
+            type: 'camera',
+            siteId: sites[0]?.id || '',
+            ipAddress: '',
+            model: ''
+        });
+    };
+
+    const handleDeleteDevice = (deviceId: string) => {
+        if (window.confirm('Are you sure you want to delete this device?')) {
+            deleteDevice(deviceId);
+        }
+    };
 
     const filteredDevices = useMemo(() => {
         let result = [...devices];
@@ -88,7 +140,7 @@ export function Devices() {
         });
 
         return result;
-    }, [searchQuery, siteFilter, statusFilter, sortColumn, sortDirection]);
+    }, [devices, searchQuery, siteFilter, statusFilter, sortColumn, sortDirection]);
 
     const totalPages = Math.ceil(filteredDevices.length / ITEMS_PER_PAGE);
     const paginatedDevices = filteredDevices.slice(
@@ -114,7 +166,7 @@ export function Devices() {
             else counts.warning++;
         });
         return counts;
-    }, []);
+    }, [devices]);
 
     const columns = [
         {
@@ -177,16 +229,42 @@ export function Devices() {
                 </span>
             ),
         },
+        {
+            key: 'actions',
+            header: '',
+            align: 'right' as const,
+            render: (device: Device) => (
+                <PermissionGuard requiredRole={['admin']}>
+                    <button
+                        className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors group"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteDevice(device.id);
+                        }}
+                        title="Delete Device"
+                    >
+                        <Trash2 className="w-4 h-4 text-slate-400 group-hover:text-red-500 dark:text-slate-500 dark:group-hover:text-red-400" />
+                    </button>
+                </PermissionGuard>
+            ),
+        },
     ];
 
     return (
         <div className="space-y-6">
             {/* Page Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Devices</h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-1">
-                    Monitor and manage all connected devices across your sites.
-                </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Devices</h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1">
+                        Monitor and manage all connected devices across your sites.
+                    </p>
+                </div>
+                <PermissionGuard requiredRole={['admin', 'manager']}>
+                    <Button icon={<Plus className="w-4 h-4" />} onClick={() => setShowAddModal(true)}>
+                        Add Device
+                    </Button>
+                </PermissionGuard>
             </div>
 
             {/* Status Summary Cards */}
@@ -314,6 +392,77 @@ export function Devices() {
                     totalItems={filteredDevices.length}
                     itemsPerPage={ITEMS_PER_PAGE}
                 />
+            )}
+
+            {/* Add Device Modal */}
+            {showAddModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                        <h2 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Add New Device</h2>
+                        <form onSubmit={handleCreateDevice} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1 dark:text-slate-200">Device Name</label>
+                                <Input
+                                    value={newDevice.name}
+                                    onChange={e => setNewDevice({ ...newDevice, name: e.target.value })}
+                                    placeholder="e.g. Lobby Camera"
+                                    required
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-1 dark:text-slate-200">Type</label>
+                                    <Select
+                                        value={newDevice.type}
+                                        onChange={e => setNewDevice({ ...newDevice, type: e.target.value })}
+                                        options={[
+                                            { value: 'camera', label: 'Camera' },
+                                            { value: 'nvr', label: 'NVR' },
+                                            { value: 'dvr', label: 'DVR' },
+                                            { value: 'switch', label: 'Switch' }
+                                        ]}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1 dark:text-slate-200">Site</label>
+                                    <Select
+                                        value={newDevice.siteId}
+                                        onChange={e => setNewDevice({ ...newDevice, siteId: e.target.value })}
+                                        options={sites.map(s => ({ value: s.id, label: s.name }))}
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-1 dark:text-slate-200">IP Address</label>
+                                    <Input
+                                        value={newDevice.ipAddress}
+                                        onChange={e => setNewDevice({ ...newDevice, ipAddress: e.target.value })}
+                                        placeholder="192.168.1.10"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1 dark:text-slate-200">Model</label>
+                                    <Input
+                                        value={newDevice.model}
+                                        onChange={e => setNewDevice({ ...newDevice, model: e.target.value })}
+                                        placeholder="Specific Model"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-3 mt-6">
+                                <Button variant="outline" onClick={() => setShowAddModal(false)} type="button">
+                                    Cancel
+                                </Button>
+                                <Button variant="primary" type="submit">
+                                    Add Device
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
         </div>
     );

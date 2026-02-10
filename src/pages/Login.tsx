@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { Button } from '../components/ui';
+import { useAuth } from '../hooks/useAuth';
 
 export function Login() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -21,6 +23,8 @@ export function Login() {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         if (email && password) {
+            // Default to admin role for the demo
+            login('admin');
             navigate('/dashboard');
         } else {
             setError('Please enter your email and password');

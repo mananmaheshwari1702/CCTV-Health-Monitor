@@ -1,73 +1,89 @@
-# React + TypeScript + Vite
+# CCTV Health Monitor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive dashboard for monitoring CCTV camera health, managing tickets, and tracking system alerts. Built with React, TypeScript, and Tailwind CSS.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 📊 Interactive Dashboard
+- **Real-time Stats**: View total devices, online/offline status, and health metrics at a glance.
+- **Dynamic Charts**: Visualizations for resolution rates and response times.
+- **Recent Alerts**: Live feed of critical system events.
 
-## React Compiler
+### 🎫 Ticketing System
+- **Full Lifecycle Management**: Create, track, and update tickets (Open -> In Progress -> Resolved -> Closed).
+- **Detail View**: Rich ticket details with comment history, priority badges, and assignee tracking.
+- **Filtering**: Filter tickets by status and priority.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🔔 Alert Management
+- **System Alerts**: Monitor hardware and network issues (`Camera Offline`, `HDD Error`, `Network Latency`).
+- **Actionable Workflow**: Acknowledge and resolve alerts directly from the UI.
+- **Severity Levels**: Visual indicators for Critical, Warning, and Info alerts.
 
-## Expanding the ESLint configuration
+### 👥 User Management & RBAC
+- **Role-Based Access Control**:
+  - **Admin**: Full access to all features.
+  - **Manager**: Can manage tickets and alerts.
+  - **Technician**: Can view and update assigned tickets.
+  - **Viewer**: Read-only access.
+- **User Administration**: Add, edit, and manage user roles and permissions.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 🎨 Modern UI/UX
+- **Dark Mode**: Fully supported dark theme with seamless switching.
+- **Responsive Design**: Optimized for desktop, tablet, and mobile viewing.
+- **Premium Aesthetics**: Glassmorphism effects, smooth transitions, and polished components.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🛠️ Tech Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Framework**: [React 18](https://reactjs.org/) + [Vite](https://vitejs.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **State Management**: React Context API (`DataContext`)
+- **Routing**: [React Router v6](https://reactrouter.com/)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 📦 Installation
+
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/mananmaheshwari1702/CCTV-Health-Monitor.git
+    cd CCTV-Health-Monitor
+    ```
+
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Start the development server**
+    ```bash
+    npm run dev
+    ```
+
+4.  **Open in browser**
+    Navigate to `http://localhost:5173`
+
+## 🏗️ Project Structure
+
+```
+src/
+├── components/         # Reusable UI components
+│   ├── auth/          # Authentication guards
+│   ├── layout/        # Sidebar, Header, Layout wrapper
+│   └── ui/            # Atomic components (Card, Button, Badge, etc.)
+├── context/           # Global state (DataContext, ThemeContext)
+├── data/              # Mock data for prototyping
+├── hooks/             # Custom hooks (useAuth, useData)
+├── pages/             # Route pages (Dashboard, Tickets, Alerts, etc.)
+└── types/             # TypeScript interfaces and types
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🔐 Credentials (Prototype)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The application uses a simulated backend. You can test different roles by switching users in the mock authentication flow or checking the `src/data/mockData.ts` file for available user profiles.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Admin User**: Full access
+- **Tech User**: Restricted access
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

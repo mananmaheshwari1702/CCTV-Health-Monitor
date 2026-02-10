@@ -1,0 +1,41 @@
+import { useData } from '../../context/DataContext';
+import { AlertCircle, X, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+export function AlertBanner() {
+    const { alerts } = useData();
+    const navigate = useNavigate();
+    const activeAlerts = alerts.filter(a => a.status === 'active' && (a.type === 'error' || a.type === 'warning'));
+
+    if (activeAlerts.length === 0) return null;
+
+    const criticalCount = activeAlerts.filter(a => a.type === 'error').length;
+    const warningCount = activeAlerts.filter(a => a.type === 'warning').length;
+
+    return (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-red-500 animate-pulse"></div>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-red-100 dark:bg-red-800/30 rounded-full">
+                        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-semibold text-red-900 dark:text-red-200">
+                            {criticalCount > 0 ? `${criticalCount} Critical Issues Detected` : 'Warnings Detected'}
+                        </h3>
+                        <p className="text-sm text-red-700 dark:text-red-300 mt-0.5">
+                            {criticalCount} critical, {warningCount} warnings need attention.
+                        </p>
+                    </div>
+                </div>
+                <button
+                    onClick={() => navigate('/alerts')}
+                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-red-100 dark:border-red-900/50 rounded-lg text-sm font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shadow-sm"
+                >
+                    View Alerts <ChevronRight className="w-4 h-4" />
+                </button>
+            </div>
+        </div>
+    );
+}

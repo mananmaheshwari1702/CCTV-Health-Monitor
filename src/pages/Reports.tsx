@@ -63,7 +63,11 @@ export function Reports() {
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value)}
                     />
-                    <Button variant="outline" icon={<Calendar className="w-4 h-4" />}>
+                    <Button
+                        variant="outline"
+                        icon={<Calendar className="w-4 h-4" />}
+                        onClick={() => alert('Schedule Report feature coming soon!')}
+                    >
                         Schedule
                     </Button>
                 </div>
@@ -163,13 +167,28 @@ export function Reports() {
                             </CardBody>
                             <CardFooter>
                                 <div className="flex gap-2">
-                                    <Button variant="primary" size="sm" icon={<Play className="w-4 h-4" />}>
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        icon={<Play className="w-4 h-4" />}
+                                        onClick={() => alert(`Generating ${report.name} report...`)}
+                                    >
                                         Generate Now
                                     </Button>
-                                    <Button variant="outline" size="sm" icon={<Download className="w-4 h-4" />}>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        icon={<Download className="w-4 h-4" />}
+                                        onClick={() => alert(`Downloading last ${report.name} report...`)}
+                                    >
                                         Download Last
                                     </Button>
-                                    <Button variant="ghost" size="sm" icon={<Settings className="w-4 h-4" />}>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        icon={<Settings className="w-4 h-4" />}
+                                        onClick={() => alert(`Configure ${report.name} report settings...`)}
+                                    >
                                         Configure
                                     </Button>
                                 </div>
@@ -194,7 +213,12 @@ export function Reports() {
                             Create custom reports by selecting specific metrics, sites, and date
                             ranges to analyze your surveillance data.
                         </p>
-                        <Button className="mt-6">Create Custom Report</Button>
+                        <Button
+                            className="mt-6"
+                            onClick={() => alert('Custom Report Builder coming soon!')}
+                        >
+                            Create Custom Report
+                        </Button>
                     </div>
                 </CardBody>
             </Card>

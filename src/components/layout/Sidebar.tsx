@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import {
     LayoutDashboard,
     MapPin,
@@ -13,6 +14,7 @@ import {
     Camera,
     Shield,
     X,
+    LogOut,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -22,22 +24,28 @@ interface SidebarProps {
     onMobileClose?: () => void;
 }
 
-const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/sites', label: 'Sites', icon: MapPin },
-    { path: '/devices', label: 'Devices', icon: HardDrive },
-    { path: '/tickets', label: 'Tickets', icon: Ticket },
-    { path: '/reports', label: 'Reports', icon: FileText },
-    { path: '/users', label: 'Users & Roles', icon: Users },
-    { path: '/settings', label: 'Settings', icon: Settings },
+const allNavItems = [
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'technician', 'viewer'] },
+    { path: '/sites', label: 'Sites', icon: MapPin, roles: ['admin', 'manager', 'technician', 'viewer'] },
+    { path: '/devices', label: 'Devices', icon: HardDrive, roles: ['admin', 'manager', 'technician', 'viewer'] },
+    { path: '/tickets', label: 'Tickets', icon: Ticket, roles: ['admin', 'manager', 'technician', 'viewer'] },
+    { path: '/alerts', label: 'Alerts', icon: Shield, roles: ['admin', 'manager', 'technician', 'viewer'] },
+    { path: '/reports', label: 'Reports', icon: FileText, roles: ['admin', 'manager', 'technician', 'viewer'] },
+    { path: '/users', label: 'Users & Roles', icon: Users, roles: ['admin'] },
+    { path: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'manager', 'technician', 'viewer'] },
 ];
 
 export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose }: SidebarProps) {
     const location = useLocation();
+    const { user, logout } = useAuth();
+
+    const navItems = allNavItems.filter(item =>
+        user && item.roles.includes(user.role)
+    );
 
     return (
         <aside
-            className={`fixed left-0 top-0 z-40 h-screen bg-slate-900 transition-all duration-300 
+            className={`fixed left-0 top-0 z-40 h-screen bg-slate-900 transition-all duration-300
                 ${collapsed ? 'w-20' : 'w-64'}
                 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} 
                 lg:translate-x-0`}
@@ -101,7 +109,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose
             {/* System Status */}
             {!collapsed && (
                 <div className="px-4 py-4 border-t border-slate-800">
-                    <div className="p-3 bg-slate-800 rounded-lg">
+                    <div className="p-3 bg-slate-800 rounded-lg mb-3">
                         <div className="flex items-center gap-2 mb-2">
                             <Shield className="w-4 h-4 text-emerald-500" />
                             <span className="text-sm font-medium text-slate-200">
@@ -113,6 +121,14 @@ export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose
                             <span className="text-xs text-slate-400">All systems operational</span>
                         </div>
                     </div>
+
+                    <button
+                        onClick={logout}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors group"
+                    >
+                        <LogOut className="w-5 h-5 flex-shrink-0 group-hover:text-red-400 transition-colors" />
+                        <span className="text-sm font-medium">Sign Out</span>
+                    </button>
                 </div>
             )}
 

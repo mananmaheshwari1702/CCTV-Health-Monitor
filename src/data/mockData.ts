@@ -184,6 +184,16 @@ export const tickets: Ticket[] = [
         assignee: 'John Smith',
         createdAt: '2026-02-09T10:35:00Z',
         updatedAt: '2026-02-09T11:00:00Z',
+        comments: [
+            {
+                id: 'cm-001',
+                ticketId: 'TKT-001',
+                userId: 'user-001',
+                userName: 'John Smith',
+                content: 'Scheduled technician visit for tomorrow.',
+                createdAt: '2026-02-09T10:45:00Z',
+            }
+        ]
     },
     {
         id: 'TKT-002',
@@ -304,6 +314,7 @@ export const alerts: Alert[] = [
         deviceId: 'dev-003',
         deviceName: 'Lobby Cam 2',
         siteName: 'Central Bank HQ',
+        status: 'active',
         timestamp: '2026-02-09T10:30:00Z',
     },
     {
@@ -313,6 +324,7 @@ export const alerts: Alert[] = [
         deviceId: 'dev-006',
         deviceName: 'Baggage Claim DVR',
         siteName: 'Airport Terminal B',
+        status: 'acknowledged',
         timestamp: '2026-02-09T08:00:00Z',
     },
     {
@@ -322,6 +334,7 @@ export const alerts: Alert[] = [
         deviceId: 'dev-007',
         deviceName: 'Warehouse Entry',
         siteName: 'Harbor Warehouse',
+        status: 'active',
         timestamp: '2026-02-09T06:00:00Z',
     },
     {
@@ -331,6 +344,7 @@ export const alerts: Alert[] = [
         deviceId: 'dev-002',
         deviceName: 'Parking Lot NVR',
         siteName: 'Downtown Mall',
+        status: 'resolved',
         timestamp: '2026-02-07T14:00:00Z',
     },
     {
@@ -340,6 +354,7 @@ export const alerts: Alert[] = [
         deviceId: 'dev-004',
         deviceName: 'Server Room Cam',
         siteName: 'Central Bank HQ',
+        status: 'resolved',
         timestamp: '2026-02-08T16:00:00Z',
     },
 ];

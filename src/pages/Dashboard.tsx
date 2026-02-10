@@ -14,13 +14,26 @@ import {
     ArrowRight,
     TrendingUp,
     Clock,
+    Activity,
+    CheckCircle,
+    Server,
+    HardDrive,
+    Shield
 } from 'lucide-react';
 import { StatsCard, Card, CardHeader, CardBody, Badge, Button } from '../components/ui';
-import { dashboardStats, alerts, tickets } from '../data/mockData';
+import { useData } from '../context/DataContext';
+import { AlertBanner } from '../components/dashboard/AlertBanner';
 
 export function Dashboard() {
+    const { dashboardStats, alerts, tickets } = useData();
+
+    // Get only active/recent alerts for display
+    const recentAlerts = alerts.slice(0, 5);
+
     return (
         <div className="space-y-6">
+            <AlertBanner />
+
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-4">
                 <StatsCard
@@ -72,7 +85,9 @@ export function Dashboard() {
                             <p className="text-blue-100 text-sm">Open Tickets</p>
                             <p className="text-4xl font-bold mt-1 text-white">{dashboardStats.openTickets}</p>
                         </div>
-                        <Ticket className="w-10 h-10 text-blue-300" />
+                        <div className="p-3 bg-white/10 rounded-lg">
+                            <Ticket className="w-8 h-8 text-blue-100" />
+                        </div>
                     </div>
                     <div className="mt-4 flex items-center gap-2">
                         <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-medium rounded">
@@ -89,7 +104,7 @@ export function Dashboard() {
                         </div>
                         <div>
                             <p className="text-sm font-medium text-slate-900 dark:text-white">Resolution Rate</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-300">Last 7 days</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Last 7 days</p>
                         </div>
                     </div>
                     <p className="text-3xl font-bold text-slate-900 dark:text-white">87.5%</p>
@@ -126,7 +141,7 @@ export function Dashboard() {
                     </CardHeader>
                     <CardBody>
                         <div className="space-y-3">
-                            {alerts.map((alert) => {
+                            {recentAlerts.map((alert) => {
                                 const icons = {
                                     error: <AlertCircle className="w-5 h-5 text-red-500" />,
                                     warning: <AlertTriangle className="w-5 h-5 text-amber-500" />,
