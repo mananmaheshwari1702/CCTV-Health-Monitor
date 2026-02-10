@@ -1,4 +1,4 @@
-import type { Site, Device, Ticket, User, DashboardStats, Alert, Report } from '../types';
+import type { Site, Device, Ticket, User, DashboardStats, Alert, Report, DeviceCamera, RecordingDay, HealthTimelineEvent, DeviceStats } from '../types';
 
 // Sites Data
 export const sites: Site[] = [
@@ -382,3 +382,132 @@ export const reports: Report[] = [
 
 // Current User (for header)
 export const currentUser: User = users[0];
+
+// Device Cameras Data
+export const deviceCameras: DeviceCamera[] = [
+    // Downtown Mall - dev-001 (Entrance Cam 1)
+    { id: 'cam-001', name: 'Front Entrance', deviceId: 'dev-001', status: 'online', type: 'dome', resolution: '4K (3840×2160)', channel: 1 },
+    { id: 'cam-002', name: 'Side Entrance', deviceId: 'dev-001', status: 'online', type: 'bullet', resolution: '1080p (1920×1080)', channel: 2 },
+    // Downtown Mall - dev-002 (Parking Lot NVR)
+    { id: 'cam-003', name: 'Parking Level 1', deviceId: 'dev-002', status: 'online', type: 'fixed', resolution: '4K (3840×2160)', channel: 1 },
+    { id: 'cam-004', name: 'Parking Level 2', deviceId: 'dev-002', status: 'online', type: 'fixed', resolution: '1080p (1920×1080)', channel: 2 },
+    { id: 'cam-005', name: 'Parking Entrance', deviceId: 'dev-002', status: 'online', type: 'bullet', resolution: '4K (3840×2160)', channel: 3 },
+    { id: 'cam-006', name: 'Parking Exit', deviceId: 'dev-002', status: 'warning', type: 'bullet', resolution: '1080p (1920×1080)', channel: 4 },
+    // Central Bank HQ - dev-003 (Lobby Cam 2 - offline)
+    { id: 'cam-007', name: 'Main Lobby', deviceId: 'dev-003', status: 'offline', type: 'ptz', resolution: '4K (3840×2160)', channel: 1 },
+    { id: 'cam-008', name: 'Reception Desk', deviceId: 'dev-003', status: 'offline', type: 'dome', resolution: '1080p (1920×1080)', channel: 2 },
+    // Central Bank HQ - dev-004 (Server Room Cam - degraded)
+    { id: 'cam-009', name: 'Server Rack A', deviceId: 'dev-004', status: 'online', type: 'fixed', resolution: '1080p (1920×1080)', channel: 1 },
+    { id: 'cam-010', name: 'Server Rack B', deviceId: 'dev-004', status: 'warning', type: 'fixed', resolution: '1080p (1920×1080)', channel: 2 },
+    { id: 'cam-011', name: 'Server Room Entry', deviceId: 'dev-004', status: 'online', type: 'dome', resolution: '4K (3840×2160)', channel: 3 },
+    // Airport Terminal B - dev-005
+    { id: 'cam-012', name: 'Gate A1 Boarding', deviceId: 'dev-005', status: 'online', type: 'ptz', resolution: '4K (3840×2160)', channel: 1 },
+    { id: 'cam-013', name: 'Gate A1 Corridor', deviceId: 'dev-005', status: 'online', type: 'bullet', resolution: '1080p (1920×1080)', channel: 2 },
+    // Airport Terminal B - dev-006 (Baggage Claim DVR - warning)
+    { id: 'cam-014', name: 'Carousel 1', deviceId: 'dev-006', status: 'online', type: 'ptz', resolution: '1080p (1920×1080)', channel: 1 },
+    { id: 'cam-015', name: 'Carousel 2', deviceId: 'dev-006', status: 'warning', type: 'ptz', resolution: '1080p (1920×1080)', channel: 2 },
+    { id: 'cam-016', name: 'Exit Door', deviceId: 'dev-006', status: 'online', type: 'bullet', resolution: '720p (1280×720)', channel: 3 },
+    // Harbor Warehouse - dev-007 (offline)
+    { id: 'cam-017', name: 'Warehouse Gate', deviceId: 'dev-007', status: 'offline', type: 'bullet', resolution: '1080p (1920×1080)', channel: 1 },
+    { id: 'cam-018', name: 'Loading Bay', deviceId: 'dev-007', status: 'offline', type: 'fixed', resolution: '1080p (1920×1080)', channel: 2 },
+    // Harbor Warehouse - dev-008
+    { id: 'cam-019', name: 'Dock Area 1', deviceId: 'dev-008', status: 'online', type: 'ptz', resolution: '4K (3840×2160)', channel: 1 },
+    { id: 'cam-020', name: 'Dock Area 2', deviceId: 'dev-008', status: 'online', type: 'fixed', resolution: '1080p (1920×1080)', channel: 2 },
+];
+
+// Device Stats
+export const deviceStatsData: DeviceStats[] = [
+    { deviceId: 'dev-001', uptimePercent: 99.8, hddFreePercent: 42, cpuUsage: 35, memoryUsage: 61, temperature: 42 },
+    { deviceId: 'dev-002', uptimePercent: 99.5, hddFreePercent: 15, cpuUsage: 72, memoryUsage: 78, temperature: 55 },
+    { deviceId: 'dev-003', uptimePercent: 62.3, hddFreePercent: 88, cpuUsage: 0, memoryUsage: 0, temperature: 22 },
+    { deviceId: 'dev-004', uptimePercent: 94.1, hddFreePercent: 53, cpuUsage: 45, memoryUsage: 67, temperature: 48 },
+    { deviceId: 'dev-005', uptimePercent: 99.9, hddFreePercent: 67, cpuUsage: 28, memoryUsage: 44, temperature: 38 },
+    { deviceId: 'dev-006', uptimePercent: 87.6, hddFreePercent: 31, cpuUsage: 55, memoryUsage: 71, temperature: 51 },
+    { deviceId: 'dev-007', uptimePercent: 23.4, hddFreePercent: 91, cpuUsage: 0, memoryUsage: 0, temperature: 20 },
+    { deviceId: 'dev-008', uptimePercent: 98.7, hddFreePercent: 58, cpuUsage: 31, memoryUsage: 52, temperature: 40 },
+];
+
+// Health Timeline Events
+export const healthTimelineEvents: HealthTimelineEvent[] = [
+    // dev-001
+    { id: 'evt-001', deviceId: 'dev-001', timestamp: '2026-02-09T14:00:00Z', type: 'status_change', message: 'Device came online', severity: 'success' },
+    { id: 'evt-002', deviceId: 'dev-001', timestamp: '2026-02-09T06:12:00Z', type: 'maintenance', message: 'Scheduled maintenance completed', severity: 'info' },
+    { id: 'evt-003', deviceId: 'dev-001', timestamp: '2026-02-08T22:45:00Z', type: 'restart', message: 'Device restarted automatically', severity: 'warning' },
+    // dev-002
+    { id: 'evt-004', deviceId: 'dev-002', timestamp: '2026-02-09T14:05:00Z', type: 'alert', message: 'Storage capacity at 85% — consider archiving', severity: 'warning' },
+    { id: 'evt-005', deviceId: 'dev-002', timestamp: '2026-02-09T08:00:00Z', type: 'status_change', message: 'Device came online', severity: 'success' },
+    { id: 'evt-006', deviceId: 'dev-002', timestamp: '2026-02-07T14:00:00Z', type: 'alert', message: 'HDD health check: SMART warning detected', severity: 'error' },
+    // dev-003
+    { id: 'evt-007', deviceId: 'dev-003', timestamp: '2026-02-09T10:30:00Z', type: 'status_change', message: 'Device went offline — connection lost', severity: 'error' },
+    { id: 'evt-008', deviceId: 'dev-003', timestamp: '2026-02-09T10:25:00Z', type: 'alert', message: 'High packet loss detected (42%)', severity: 'warning' },
+    { id: 'evt-009', deviceId: 'dev-003', timestamp: '2026-02-08T16:00:00Z', type: 'firmware', message: 'Firmware update v10.12.114 installed', severity: 'info' },
+    { id: 'evt-010', deviceId: 'dev-003', timestamp: '2026-02-07T09:00:00Z', type: 'status_change', message: 'Device came online', severity: 'success' },
+    // dev-004
+    { id: 'evt-011', deviceId: 'dev-004', timestamp: '2026-02-09T14:10:00Z', type: 'alert', message: 'Image quality degraded — sensor cleaning required', severity: 'warning' },
+    { id: 'evt-012', deviceId: 'dev-004', timestamp: '2026-02-08T16:00:00Z', type: 'firmware', message: 'Firmware update available: v2.821.0', severity: 'info' },
+    { id: 'evt-013', deviceId: 'dev-004', timestamp: '2026-02-07T11:30:00Z', type: 'restart', message: 'Manual restart performed by admin', severity: 'info' },
+    // dev-005
+    { id: 'evt-014', deviceId: 'dev-005', timestamp: '2026-02-09T14:15:00Z', type: 'status_change', message: 'All systems operational', severity: 'success' },
+    { id: 'evt-015', deviceId: 'dev-005', timestamp: '2026-02-06T03:00:00Z', type: 'maintenance', message: 'Scheduled firmware update completed', severity: 'info' },
+    // dev-006
+    { id: 'evt-016', deviceId: 'dev-006', timestamp: '2026-02-09T14:00:00Z', type: 'alert', message: 'Recording gap detected (02:00–04:00 AM)', severity: 'error' },
+    { id: 'evt-017', deviceId: 'dev-006', timestamp: '2026-02-09T08:00:00Z', type: 'status_change', message: 'Device status changed to Warning', severity: 'warning' },
+    { id: 'evt-018', deviceId: 'dev-006', timestamp: '2026-02-08T20:00:00Z', type: 'restart', message: 'DVR rebooted due to high temperature', severity: 'error' },
+    // dev-007
+    { id: 'evt-019', deviceId: 'dev-007', timestamp: '2026-02-08T23:45:00Z', type: 'status_change', message: 'Device went offline — power failure suspected', severity: 'error' },
+    { id: 'evt-020', deviceId: 'dev-007', timestamp: '2026-02-08T18:00:00Z', type: 'alert', message: 'Network timeout (5 min)', severity: 'warning' },
+    { id: 'evt-021', deviceId: 'dev-007', timestamp: '2026-02-07T10:00:00Z', type: 'maintenance', message: 'Lens cleaning performed', severity: 'info' },
+    // dev-008
+    { id: 'evt-022', deviceId: 'dev-008', timestamp: '2026-02-09T14:12:00Z', type: 'status_change', message: 'Device online — all checks passed', severity: 'success' },
+    { id: 'evt-023', deviceId: 'dev-008', timestamp: '2026-02-08T06:00:00Z', type: 'firmware', message: 'Firmware v7.82 installed successfully', severity: 'info' },
+];
+
+// Generate 1-year (365-day) recording calendar for a device's cameras
+export function generateRecordingCalendar(deviceId: string): RecordingDay[] {
+    const cameras = deviceCameras.filter(c => c.deviceId === deviceId);
+    const result: RecordingDay[] = [];
+    const today = new Date('2026-02-09');
+
+    // Seed-based pseudo-random for consistency
+    const seedRandom = (seed: number) => {
+        let s = seed;
+        return () => {
+            s = (s * 16807 + 0) % 2147483647;
+            return s / 2147483647;
+        };
+    };
+
+    cameras.forEach((camera, camIdx) => {
+        const rand = seedRandom(camIdx * 1000 + deviceId.charCodeAt(4) * 100);
+        for (let i = 364; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+
+            let status: RecordingDay['status'];
+            const r = rand();
+
+            if (camera.status === 'offline') {
+                // Offline cameras: more missing/no_data in recent days
+                if (i < 7) status = 'no_data';
+                else if (r < 0.5) status = 'available';
+                else if (r < 0.85) status = 'missing';
+                else status = 'no_data';
+            } else if (camera.status === 'warning') {
+                // Warning cameras: occasional gaps
+                if (r < 0.75) status = 'available';
+                else if (r < 0.92) status = 'missing';
+                else status = 'no_data';
+            } else {
+                // Online cameras: mostly available
+                if (r < 0.88) status = 'available';
+                else if (r < 0.96) status = 'missing';
+                else status = 'no_data';
+            }
+
+            result.push({ date: dateStr, cameraId: camera.id, cameraName: camera.name, status });
+        }
+    });
+
+    return result;
+}

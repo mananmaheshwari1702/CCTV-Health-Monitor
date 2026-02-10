@@ -110,7 +110,7 @@ export function Login() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="admin@company.com"
-                                        className="w-full pl-12 pr-4 py-3 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400"
+                                        className="w-full pl-12 pr-4 py-3 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400"
                                     />
                                 </div>
                             </div>
@@ -126,7 +126,7 @@ export function Login() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="••••••••"
-                                        className="w-full pl-12 pr-12 py-3 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400"
+                                        className="w-full pl-12 pr-12 py-3 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400"
                                     />
                                     <button
                                         type="button"
@@ -150,7 +150,7 @@ export function Login() {
                                         onChange={(e) => setRememberMe(e.target.checked)}
                                         className="w-4 h-4 text-blue-600 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500 dark:bg-slate-900/50"
                                     />
-                                    <span className="text-sm text-slate-600 dark:text-slate-400">Remember me</span>
+                                    <span className="text-sm text-slate-600 dark:text-slate-300">Remember me</span>
                                 </label>
                                 <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
                                     Forgot password?

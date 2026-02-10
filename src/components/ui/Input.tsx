@@ -35,7 +35,7 @@ export function Input({
           placeholder:text-slate-400
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
-          ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 dark:border-slate-600'}
+          ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 dark:border-slate-700'}
           ${className}
         `}
                 {...props}
@@ -66,7 +66,7 @@ export function SearchInput({
                 placeholder={placeholder}
                 className={`
           w-full pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white
-          bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-600 rounded-lg
+          bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg
           placeholder:text-slate-400
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           ${className}
@@ -112,7 +112,7 @@ export function Select({
           bg-white dark:bg-slate-900 border rounded-lg appearance-none
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
-          ${error ? 'border-red-300' : 'border-slate-300 dark:border-slate-600'}
+          ${error ? 'border-red-300' : 'border-slate-300 dark:border-slate-700'}
           ${hasCustomWidth ? '' : 'w-full'}
           ${className}
         `}
@@ -162,7 +162,7 @@ export function Textarea({
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
           resize-y min-h-[100px]
-          ${error ? 'border-red-300' : 'border-slate-300 dark:border-slate-600'}
+          ${error ? 'border-red-300' : 'border-slate-300 dark:border-slate-700'}
           ${className}
         `}
                 {...props}

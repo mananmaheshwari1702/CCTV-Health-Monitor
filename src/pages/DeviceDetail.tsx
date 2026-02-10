@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ArrowLeft,
@@ -15,6 +15,15 @@ import {
     Video,
     HardDrive,
     Cpu,
+    Activity,
+    Thermometer,
+    Info,
+    Wrench,
+    RotateCcw,
+    Download,
+    ChevronLeft,
+    ChevronRight,
+    TicketPlus,
 } from 'lucide-react';
 import {
     Card,
@@ -25,36 +34,155 @@ import {
     Badge,
     StatusBadge,
     HealthBadge,
+    Modal,
 } from '../components/ui';
-import { devices, tickets } from '../data/mockData';
+import { devices, tickets, deviceCameras, deviceStatsData, healthTimelineEvents, generateRecordingCalendar } from '../data/mockData';
+import type { RecordingDay, HealthTimelineEvent as TimelineEvent } from '../types';
 
+// ─── Helpers ──────────────────────────────────────────────────────────
+function formatDate(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
+}
+
+function formatTime(dateStr: string): string {
+    return new Date(dateStr).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+}
+
+function formatDateTime(dateStr: string): string {
+    return `${formatDate(dateStr)} at ${formatTime(dateStr)}`;
+}
+
+// ─── Timeline Icon ────────────────────────────────────────────────────
+function TimelineIcon({ event }: { event: TimelineEvent }) {
+    const baseClass = 'w-4 h-4';
+    switch (event.type) {
+        case 'status_change':
+            return event.severity === 'error'
+                ? <XCircle className={`${baseClass} text-red-500`} />
+                : <CheckCircle className={`${baseClass} text-emerald-500`} />;
+        case 'alert':
+            return <AlertTriangle className={`${baseClass} text-amber-500`} />;
+        case 'maintenance':
+            return <Wrench className={`${baseClass} text-blue-500`} />;
+        case 'firmware':
+            return <Download className={`${baseClass} text-purple-500`} />;
+        case 'restart':
+            return <RotateCcw className={`${baseClass} text-orange-500`} />;
+        default:
+            return <Info className={`${baseClass} text-slate-500`} />;
+    }
+}
+
+const severityBorder: Record<string, string> = {
+    success: 'border-emerald-500',
+    info: 'border-blue-500',
+    warning: 'border-amber-500',
+    error: 'border-red-500',
+};
+
+// ─── Main Component ──────────────────────────────────────────────────
 export function DeviceDetail() {
     const { deviceId } = useParams();
     const navigate = useNavigate();
+    const [selectedRecording, setSelectedRecording] = useState<RecordingDay | null>(null);
+    const [ticketCreated, setTicketCreated] = useState(false);
+    const [selectedMonth, setSelectedMonth] = useState(() => new Date(2026, 1, 1)); // Feb 2026
 
     const device = devices.find((d) => d.id === deviceId);
     const deviceTickets = tickets.filter((t) => t.deviceId === deviceId);
+    const cameras = deviceCameras.filter((c) => c.deviceId === deviceId);
+    const stats = deviceStatsData.find((s) => s.deviceId === deviceId);
+    const timeline = healthTimelineEvents
+        .filter((e) => e.deviceId === deviceId)
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    const recordingData = useMemo(
+        () => (deviceId ? generateRecordingCalendar(deviceId) : []),
+        [deviceId]
+    );
+
+    // Build the date range for the selected month
+    const dateRange = useMemo(() => {
+        const dates: string[] = [];
+        const year = selectedMonth.getFullYear();
+        const month = selectedMonth.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        for (let d = 1; d <= daysInMonth; d++) {
+            const date = new Date(year, month, d);
+            dates.push(date.toISOString().split('T')[0]);
+        }
+        return dates;
+    }, [selectedMonth]);
+
+    // Unique camera IDs for the calendar rows
+    const calendarCameras = useMemo(() => {
+        const map = new Map<string, string>();
+        recordingData.forEach((r) => map.set(r.cameraId, r.cameraName));
+        return Array.from(map.entries());
+    }, [recordingData]);
+
+    // Month boundaries: Feb 2025 → Feb 2026 (use year/month ints to avoid timezone bugs)
+    const selectedYM = selectedMonth.getFullYear() * 12 + selectedMonth.getMonth();
+    const earliestYM = 2025 * 12 + 1;  // Feb 2025
+    const latestYM = 2026 * 12 + 1;    // Feb 2026
+
+    const canGoPrev = selectedYM > earliestYM;
+    const canGoNext = selectedYM < latestYM;
+
+    const goToPrevMonth = () => {
+        if (!canGoPrev) return;
+        setSelectedMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+    };
+    const goToNextMonth = () => {
+        if (!canGoNext) return;
+        setSelectedMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+    };
+
+    const monthLabel = selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
     if (!device) {
         return (
             <div className="text-center py-12">
                 <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Device not found</h2>
-                <Button variant="outline" onClick={() => navigate('/sites')} className="mt-4">
-                    Back to Sites
+                <Button variant="outline" onClick={() => navigate('/devices')} className="mt-4">
+                    Back to Devices
                 </Button>
             </div>
         );
     }
 
+    const uptimeColor = (stats?.uptimePercent ?? 0) >= 99 ? 'text-emerald-600 dark:text-emerald-400'
+        : (stats?.uptimePercent ?? 0) >= 90 ? 'text-amber-600 dark:text-amber-400'
+            : 'text-red-600 dark:text-red-400';
+
+    const hddColor = (stats?.hddFreePercent ?? 0) >= 50 ? 'bg-emerald-500'
+        : (stats?.hddFreePercent ?? 0) >= 20 ? 'bg-amber-500'
+            : 'bg-red-500';
+
+    const handleCreateTicket = () => {
+        setTicketCreated(true);
+        setTimeout(() => {
+            setTicketCreated(false);
+            setSelectedRecording(null);
+        }, 2000);
+    };
+
     return (
         <div className="space-y-6">
             {/* Back Button */}
             <button
-                onClick={() => navigate('/sites')}
-                className="flex items-center gap-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
             >
                 <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm font-medium">Back to Sites</span>
+                <span className="text-sm font-medium">Back</span>
             </button>
 
             {/* Device Header */}
@@ -67,6 +195,7 @@ export function DeviceDetail() {
                         <div className="flex items-center gap-3">
                             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{device.name}</h1>
                             <StatusBadge status={device.status} />
+                            <HealthBadge health={device.health} />
                         </div>
                         <p className="text-slate-500 dark:text-slate-400 mt-1">{device.siteName}</p>
                         <div className="flex items-center gap-4 mt-2 text-sm text-slate-500 dark:text-slate-400">
@@ -76,7 +205,7 @@ export function DeviceDetail() {
                             </span>
                             <span className="flex items-center gap-1">
                                 <Clock className="w-4 h-4" />
-                                Last seen: {new Date(device.lastSeen).toLocaleString()}
+                                Last seen: {formatDateTime(device.lastSeen)}
                             </span>
                         </div>
                     </div>
@@ -91,116 +220,507 @@ export function DeviceDetail() {
                 </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* ─── Summary Cards ─────────────────────────────────────────── */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Status */}
                 <Card>
                     <CardBody>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-50 rounded-lg">
-                                {device.status === 'online' ? (
-                                    <Wifi className="w-5 h-5 text-blue-600" />
-                                ) : (
-                                    <WifiOff className="w-5 h-5 text-red-600" />
-                                )}
+                            <div className={`p-2.5 rounded-xl ${device.status === 'online'
+                                ? 'bg-emerald-50 dark:bg-emerald-900/30'
+                                : device.status === 'warning'
+                                    ? 'bg-amber-50 dark:bg-amber-900/30'
+                                    : 'bg-red-50 dark:bg-red-900/30'
+                                }`}>
+                                {device.status === 'online'
+                                    ? <Wifi className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                    : device.status === 'warning'
+                                        ? <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                                        : <WifiOff className="w-5 h-5 text-red-600 dark:text-red-400" />
+                                }
                             </div>
                             <div>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">Connection</p>
-                                <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
-                                    {device.status}
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Status</p>
+                                <p className="text-lg font-bold text-slate-900 dark:text-white capitalize">{device.status}</p>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+
+                {/* Uptime */}
+                <Card>
+                    <CardBody>
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
+                                <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Uptime</p>
+                                <p className={`text-lg font-bold ${uptimeColor}`}>
+                                    {stats?.uptimePercent.toFixed(1)}%
                                 </p>
                             </div>
                         </div>
                     </CardBody>
                 </Card>
 
+                {/* HDD Free */}
                 <Card>
                     <CardBody>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-emerald-50 rounded-lg">
-                                {device.health === 'healthy' ? (
-                                    <CheckCircle className="w-5 h-5 text-emerald-600" />
-                                ) : device.health === 'degraded' ? (
-                                    <AlertTriangle className="w-5 h-5 text-amber-600" />
-                                ) : (
-                                    <XCircle className="w-5 h-5 text-red-600" />
-                                )}
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-purple-50 dark:bg-purple-900/30 rounded-xl">
+                                    <HardDrive className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">HDD Free</p>
+                                    <p className="text-lg font-bold text-slate-900 dark:text-white">
+                                        {stats?.hddFreePercent}%
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">Health</p>
-                                <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
-                                    {device.health}
-                                </p>
+                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                                <div
+                                    className={`${hddColor} h-1.5 rounded-full transition-all`}
+                                    style={{ width: `${stats?.hddFreePercent ?? 0}%` }}
+                                />
                             </div>
                         </div>
                     </CardBody>
                 </Card>
 
+                {/* Temperature */}
                 <Card>
                     <CardBody>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-purple-50 rounded-lg">
-                                <Video className="w-5 h-5 text-purple-600" />
+                            <div className="p-2.5 bg-orange-50 dark:bg-orange-900/30 rounded-xl">
+                                <Thermometer className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                             </div>
                             <div>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">Recording</p>
-                                <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
-                                    {device.recordingStatus.replace('_', ' ')}
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Temperature</p>
+                                <p className={`text-lg font-bold ${(stats?.temperature ?? 0) > 50
+                                    ? 'text-red-600 dark:text-red-400'
+                                    : (stats?.temperature ?? 0) > 40
+                                        ? 'text-amber-600 dark:text-amber-400'
+                                        : 'text-slate-900 dark:text-white'
+                                    }`}>
+                                    {stats?.temperature}°C
                                 </p>
-                            </div>
-                        </div>
-                    </CardBody>
-                </Card>
-
-                <Card>
-                    <CardBody>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-amber-50 rounded-lg">
-                                <HardDrive className="w-5 h-5 text-amber-600" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">Storage</p>
-                                <p className="text-lg font-semibold text-slate-900 dark:text-white">72%</p>
                             </div>
                         </div>
                     </CardBody>
                 </Card>
             </div>
 
-            {/* Device Info & Tickets */}
+            {/* ─── Device Info & Camera List ──────────────────────────────── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Device Information */}
                 <Card>
                     <CardHeader>Device Information</CardHeader>
                     <CardBody>
-                        <div className="space-y-4">
-                            <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/50">
-                                <span className="text-sm text-slate-500 dark:text-slate-400">Device ID</span>
-                                <span className="text-sm font-mono font-medium text-slate-900 dark:text-white">
-                                    {device.id}
+                        <div className="space-y-3">
+                            {[
+                                ['Device ID', device.id, true],
+                                ['Type', device.type.toUpperCase(), false],
+                                ['Model', device.model, false],
+                                ['Firmware', device.firmware, false],
+                                ['IP Address', device.ipAddress, true],
+                                ['Site', device.siteName, false],
+                                ['Recording', device.recordingStatus.replace('_', ' '), false],
+                            ].map(([label, value, mono], idx, arr) => (
+                                <div
+                                    key={label as string}
+                                    className={`flex justify-between py-2 ${idx < arr.length - 1 ? 'border-b border-slate-100 dark:border-slate-800/50' : ''}`}
+                                >
+                                    <span className="text-sm text-slate-500 dark:text-slate-400">{label as string}</span>
+                                    <span className={`text-sm font-medium text-slate-900 dark:text-white ${mono ? 'font-mono' : ''} capitalize`}>
+                                        {value as string}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </CardBody>
+                </Card>
+
+                {/* Camera List */}
+                <Card>
+                    <CardHeader>
+                        Connected Cameras ({cameras.length})
+                    </CardHeader>
+                    <CardBody>
+                        {cameras.length === 0 ? (
+                            <div className="text-center py-8">
+                                <Camera className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                                <p className="text-sm text-slate-500 dark:text-slate-400">No cameras connected</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {cameras.map((cam) => (
+                                    <div
+                                        key={cam.id}
+                                        className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-transparent dark:border-slate-800"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-2 h-2 rounded-full ${cam.status === 'online'
+                                                ? 'bg-emerald-500'
+                                                : cam.status === 'warning'
+                                                    ? 'bg-amber-500'
+                                                    : 'bg-red-500'
+                                                }`} />
+                                            <div>
+                                                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                                                    {cam.name}
+                                                </p>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                                    Ch{cam.channel} • {cam.type.toUpperCase()} • {cam.resolution}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <StatusBadge status={cam.status} />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardBody>
+                </Card>
+            </div>
+
+            {/* ─── Health Timeline ────────────────────────────────────────── */}
+            <Card>
+                <CardHeader>Health Timeline</CardHeader>
+                <CardBody>
+                    {timeline.length === 0 ? (
+                        <p className="text-center text-sm text-slate-500 dark:text-slate-400 py-6">
+                            No events recorded
+                        </p>
+                    ) : (
+                        <div className="relative">
+                            {/* Vertical line */}
+                            <div className="absolute left-[17px] top-3 bottom-3 w-px bg-slate-200 dark:bg-slate-700" />
+
+                            <div className="space-y-4">
+                                {timeline.map((event, idx) => (
+                                    <div key={event.id} className="flex items-start gap-4 relative">
+                                        {/* Icon circle */}
+                                        <div className={`relative z-10 flex items-center justify-center w-9 h-9 rounded-full border-2 bg-white dark:bg-slate-800 ${severityBorder[event.severity]}`}>
+                                            <TimelineIcon event={event} />
+                                        </div>
+                                        {/* Content */}
+                                        <div className="flex-1 pt-1">
+                                            <p className="text-sm font-medium text-slate-900 dark:text-white">
+                                                {event.message}
+                                            </p>
+                                            <div className="flex items-center gap-3 mt-1">
+                                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                                    {formatDateTime(event.timestamp)}
+                                                </span>
+                                                <Badge
+                                                    variant={
+                                                        event.severity === 'error' ? 'danger'
+                                                            : event.severity === 'warning' ? 'warning'
+                                                                : event.severity === 'success' ? 'success'
+                                                                    : 'info'
+                                                    }
+                                                    size="sm"
+                                                >
+                                                    {event.type.replace('_', ' ')}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </CardBody>
+            </Card>
+
+            {/* ─── Recording Availability Calendar (1 Year) ────────────────── */}
+            <Card>
+                <CardHeader>
+                    Recording Availability
+                </CardHeader>
+                <CardBody>
+                    {calendarCameras.length === 0 ? (
+                        <p className="text-center text-sm text-slate-500 dark:text-slate-400 py-6">
+                            No camera data available
+                        </p>
+                    ) : (
+                        <>
+                            {/* Month Navigation + Legend */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={goToPrevMonth}
+                                        disabled={!canGoPrev}
+                                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        aria-label="Previous month"
+                                    >
+                                        <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                                    </button>
+                                    <span className="text-sm font-semibold text-slate-900 dark:text-white min-w-[140px] text-center">
+                                        {monthLabel}
+                                    </span>
+                                    <button
+                                        onClick={goToNextMonth}
+                                        disabled={!canGoNext}
+                                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        aria-label="Next month"
+                                    >
+                                        <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="w-3 h-3 rounded-sm bg-emerald-500" />
+                                        <span className="text-xs text-slate-600 dark:text-slate-400">Available</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="w-3 h-3 rounded-sm bg-red-500" />
+                                        <span className="text-xs text-slate-600 dark:text-slate-400">Missing</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="w-3 h-3 rounded-sm bg-slate-300 dark:bg-slate-600" />
+                                        <span className="text-xs text-slate-600 dark:text-slate-400">No Data</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Calendar Grid */}
+                            <div className="overflow-x-auto">
+                                <div className="min-w-[700px]">
+                                    {/* Date Header Row */}
+                                    <div className="flex">
+                                        <div className="w-32 flex-shrink-0" />
+                                        <div className="flex-1 grid" style={{ gridTemplateColumns: `repeat(${dateRange.length}, 1fr)` }}>
+                                            {dateRange.map((date) => {
+                                                const d = new Date(date);
+                                                return (
+                                                    <div key={date} className="text-center px-0.5">
+                                                        <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                                                            {d.getDate()}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* Camera Rows */}
+                                    {calendarCameras.map(([camId, camName]) => (
+                                        <div key={camId} className="flex items-center mt-1">
+                                            <div className="w-32 flex-shrink-0 pr-2">
+                                                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate" title={camName}>
+                                                    {camName}
+                                                </p>
+                                            </div>
+                                            <div className="flex-1 grid gap-px" style={{ gridTemplateColumns: `repeat(${dateRange.length}, 1fr)` }}>
+                                                {dateRange.map((date) => {
+                                                    const entry = recordingData.find(
+                                                        (r) => r.cameraId === camId && r.date === date
+                                                    );
+                                                    const status = entry?.status ?? 'no_data';
+
+                                                    const cellColor =
+                                                        status === 'available'
+                                                            ? 'bg-emerald-500 hover:bg-emerald-600'
+                                                            : status === 'missing'
+                                                                ? 'bg-red-500 hover:bg-red-600 cursor-pointer'
+                                                                : 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600';
+
+                                                    return (
+                                                        <button
+                                                            key={`${camId}-${date}`}
+                                                            className={`h-5 rounded-sm ${cellColor} transition-colors relative group`}
+                                                            onClick={() => {
+                                                                if (status === 'missing' && entry) {
+                                                                    setSelectedRecording(entry);
+                                                                    setTicketCreated(false);
+                                                                }
+                                                            }}
+                                                            title={`${camName} — ${formatDate(date)} — ${status.replace('_', ' ')}`}
+                                                        >
+                                                            {/* Tooltip */}
+                                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-20 pointer-events-none">
+                                                                <div className="bg-slate-900 dark:bg-slate-700 text-white text-[10px] rounded px-2 py-1 whitespace-nowrap shadow-lg">
+                                                                    {formatDate(date)} — {status.replace('_', ' ')}
+                                                                </div>
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Monthly Summary Bar */}
+                            {(() => {
+                                const monthDates = new Set(dateRange);
+                                const monthEntries = recordingData.filter(r => monthDates.has(r.date));
+                                const total = monthEntries.length;
+                                if (total === 0) return null;
+                                const available = monthEntries.filter(r => r.status === 'available').length;
+                                const missing = monthEntries.filter(r => r.status === 'missing').length;
+                                const noData = total - available - missing;
+                                const pctAvail = Math.round((available / total) * 100);
+                                const pctMissing = Math.round((missing / total) * 100);
+                                const pctNoData = 100 - pctAvail - pctMissing;
+                                return (
+                                    <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+                                            Monthly Summary
+                                        </p>
+                                        <div className="flex h-2.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
+                                            {pctAvail > 0 && (
+                                                <div className="bg-emerald-500 transition-all" style={{ width: `${pctAvail}%` }} />
+                                            )}
+                                            {pctMissing > 0 && (
+                                                <div className="bg-red-500 transition-all" style={{ width: `${pctMissing}%` }} />
+                                            )}
+                                            {pctNoData > 0 && (
+                                                <div className="bg-slate-300 dark:bg-slate-600 transition-all" style={{ width: `${pctNoData}%` }} />
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-4 mt-2">
+                                            <span className="text-xs text-slate-600 dark:text-slate-400">
+                                                <span className="font-medium text-emerald-600 dark:text-emerald-400">{pctAvail}%</span> Available
+                                            </span>
+                                            <span className="text-xs text-slate-600 dark:text-slate-400">
+                                                <span className="font-medium text-red-600 dark:text-red-400">{pctMissing}%</span> Missing
+                                            </span>
+                                            <span className="text-xs text-slate-600 dark:text-slate-400">
+                                                <span className="font-medium text-slate-500">{pctNoData}%</span> No Data
+                                            </span>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                        </>
+                    )}
+                </CardBody>
+            </Card>
+
+            {/* ─── Related Tickets ────────────────────────────────────────── */}
+            <Card>
+                <CardHeader
+                    action={
+                        <Button variant="ghost" size="sm">
+                            Create Ticket
+                        </Button>
+                    }
+                >
+                    Related Tickets
+                </CardHeader>
+                <CardBody>
+                    {deviceTickets.length === 0 ? (
+                        <div className="text-center py-8">
+                            <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
+                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">No open tickets</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                This device has no associated tickets
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {deviceTickets.map((ticket) => (
+                                <div
+                                    key={ticket.id}
+                                    className="p-3 bg-slate-50 dark:bg-slate-900/30 border border-transparent dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/70 cursor-pointer transition-all"
+                                >
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div>
+                                            <p className="text-sm font-medium text-slate-900 dark:text-white">
+                                                {ticket.title}
+                                            </p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                                {ticket.id} • {ticket.assignee}
+                                            </p>
+                                        </div>
+                                        <Badge
+                                            variant={
+                                                ticket.priority === 'critical' ? 'danger' : 'warning'
+                                            }
+                                            size="sm"
+                                        >
+                                            {ticket.priority}
+                                        </Badge>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardBody>
+            </Card>
+
+            {/* ─── Missing Recording Modal ────────────────────────────────── */}
+            <Modal
+                isOpen={!!selectedRecording}
+                onClose={() => setSelectedRecording(null)}
+                title="Missing Recording"
+                size="sm"
+                footer={
+                    <div className="flex justify-end gap-3">
+                        <button
+                            onClick={() => setSelectedRecording(null)}
+                            className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        >
+                            Close
+                        </button>
+                        <button
+                            onClick={handleCreateTicket}
+                            disabled={ticketCreated}
+                            className={`px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-2 transition-colors ${ticketCreated
+                                ? 'bg-emerald-600 text-white cursor-default'
+                                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                }`}
+                        >
+                            {ticketCreated ? (
+                                <>
+                                    <CheckCircle className="w-4 h-4" />
+                                    Ticket Created
+                                </>
+                            ) : (
+                                <>
+                                    <TicketPlus className="w-4 h-4" />
+                                    Create Ticket
+                                </>
+                            )}
+                        </button>
+                    </div>
+                }
+            >
+                {selectedRecording && (
+                    <div className="space-y-4">
+                        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-xl">
+                            <div className="flex items-center gap-2 mb-2">
+                                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                                <span className="text-sm font-semibold text-red-700 dark:text-red-400">
+                                    Recording Gap Detected
                                 </span>
                             </div>
+                            <p className="text-sm text-red-600 dark:text-red-300">
+                                No recording data found for this camera on the specified date.
+                            </p>
+                        </div>
+                        <div className="space-y-3">
                             <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/50">
-                                <span className="text-sm text-slate-500 dark:text-slate-400">Type</span>
-                                <span className="text-sm font-medium text-slate-900 dark:text-white uppercase">
-                                    {device.type}
-                                </span>
-                            </div>
-                            <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/50">
-                                <span className="text-sm text-slate-500 dark:text-slate-400">Model</span>
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Date</span>
                                 <span className="text-sm font-medium text-slate-900 dark:text-white">
-                                    {device.model}
+                                    {formatDate(selectedRecording.date)}
                                 </span>
                             </div>
                             <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/50">
-                                <span className="text-sm text-slate-500 dark:text-slate-400">Firmware</span>
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Camera</span>
                                 <span className="text-sm font-medium text-slate-900 dark:text-white">
-                                    {device.firmware}
+                                    {selectedRecording.cameraName}
                                 </span>
                             </div>
                             <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/50">
-                                <span className="text-sm text-slate-500 dark:text-slate-400">IP Address</span>
-                                <span className="text-sm font-mono font-medium text-slate-900 dark:text-white">
-                                    {device.ipAddress}
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Device</span>
+                                <span className="text-sm font-medium text-slate-900 dark:text-white">
+                                    {device.name}
                                 </span>
                             </div>
                             <div className="flex justify-between py-2">
@@ -210,86 +730,9 @@ export function DeviceDetail() {
                                 </span>
                             </div>
                         </div>
-                    </CardBody>
-                </Card>
-
-                {/* Related Tickets */}
-                <Card>
-                    <CardHeader
-                        action={
-                            <Button variant="ghost" size="sm">
-                                Create Ticket
-                            </Button>
-                        }
-                    >
-                        Related Tickets
-                    </CardHeader>
-                    <CardBody>
-                        {deviceTickets.length === 0 ? (
-                            <div className="text-center py-8">
-                                <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
-                                <p className="text-sm font-medium text-slate-700">No open tickets</p>
-                                <p className="text-xs text-slate-500 mt-1">
-                                    This device has no associated tickets
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {deviceTickets.map((ticket) => (
-                                    <div
-                                        key={ticket.id}
-                                        className="p-3 bg-slate-50 dark:bg-slate-900/30 border border-transparent dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/70 cursor-pointer transition-all"
-                                    >
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div>
-                                                <p className="text-sm font-medium text-slate-900 dark:text-white">
-                                                    {ticket.title}
-                                                </p>
-                                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                                    {ticket.id} • {ticket.assignee}
-                                                </p>
-                                            </div>
-                                            <Badge
-                                                variant={
-                                                    ticket.priority === 'critical' ? 'danger' : 'warning'
-                                                }
-                                                size="sm"
-                                            >
-                                                {ticket.priority}
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </CardBody>
-                </Card>
-            </div>
-
-            {/* Health History */}
-            <Card>
-                <CardHeader>Health History (Last 7 Days)</CardHeader>
-                <CardBody>
-                    <div className="flex items-end gap-1 h-32">
-                        {[95, 98, 100, 100, 92, 88, 100].map((value, index) => (
-                            <div key={index} className="flex-1 flex flex-col items-center gap-1">
-                                <div
-                                    className={`w-full rounded-t ${value === 100
-                                        ? 'bg-emerald-500'
-                                        : value >= 90
-                                            ? 'bg-amber-500'
-                                            : 'bg-red-500'
-                                        }`}
-                                    style={{ height: `${value}%` }}
-                                />
-                                <span className="text-xs text-slate-500">
-                                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}
-                                </span>
-                            </div>
-                        ))}
                     </div>
-                </CardBody>
-            </Card>
+                )}
+            </Modal>
         </div>
     );
 }

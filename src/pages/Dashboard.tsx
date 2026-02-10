@@ -141,7 +141,7 @@ export function Dashboard() {
                                 return (
                                     <div
                                         key={alert.id}
-                                        className={`flex items-start gap-3 p-3 rounded-lg border ${bgColors[alert.type]} dark:bg-slate-800/50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors`}
+                                        className={`flex items-start gap-3 p-3 rounded-lg border ${bgColors[alert.type]} dark:bg-slate-800/50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors`}
                                     >
                                         {icons[alert.type]}
                                         <div className="flex-1 min-w-0">
@@ -221,7 +221,7 @@ export function Dashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <Link
                             to="/sites"
-                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
+                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
                         >
                             <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
                                 <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -230,7 +230,7 @@ export function Dashboard() {
                         </Link>
                         <Link
                             to="/tickets"
-                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
+                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
                         >
                             <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
                                 <Ticket className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -239,7 +239,7 @@ export function Dashboard() {
                         </Link>
                         <Link
                             to="/reports"
-                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
+                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
                         >
                             <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
                                 <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -248,7 +248,7 @@ export function Dashboard() {
                         </Link>
                         <Link
                             to="/users"
-                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
+                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
                         >
                             <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-full">
                                 <HeartCrack className="w-5 h-5 text-amber-600 dark:text-amber-400" />

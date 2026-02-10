@@ -121,7 +121,7 @@ export function Sites() {
 
                             {/* Expanded Devices List */}
                             {isExpanded && (
-                                <div className="border-t border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/20 p-4">
+                                <div className="border-t border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/50 p-4">
                                     <div className="flex items-center justify-between mb-3">
                                         <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
                                             Devices ({siteDevices.length})
@@ -169,7 +169,7 @@ export function Sites() {
 
             {filteredSites.length === 0 && (
                 <div className="text-center py-12">
-                    <MapPin className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                    <MapPin className="w-12 h-12 text-slate-300 dark:text-slate-500 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">No sites found</h3>
                     <p className="text-slate-500 dark:text-slate-400 mt-1">
                         Try adjusting your search criteria

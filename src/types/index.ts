@@ -26,6 +26,47 @@ export interface Device {
     firmware: string;
 }
 
+// Camera Types
+export interface DeviceCamera {
+    id: string;
+    name: string;
+    deviceId: string;
+    status: 'online' | 'offline' | 'warning';
+    type: 'fixed' | 'ptz' | 'dome' | 'bullet';
+    resolution: string;
+    channel: number;
+}
+
+// Recording Calendar Types
+export type RecordingStatus = 'available' | 'missing' | 'no_data';
+
+export interface RecordingDay {
+    date: string;
+    cameraId: string;
+    cameraName: string;
+    status: RecordingStatus;
+}
+
+// Health Timeline Types
+export interface HealthTimelineEvent {
+    id: string;
+    deviceId: string;
+    timestamp: string;
+    type: 'status_change' | 'alert' | 'maintenance' | 'firmware' | 'restart';
+    message: string;
+    severity: 'info' | 'warning' | 'error' | 'success';
+}
+
+// Device Stats
+export interface DeviceStats {
+    deviceId: string;
+    uptimePercent: number;
+    hddFreePercent: number;
+    cpuUsage: number;
+    memoryUsage: number;
+    temperature: number;
+}
+
 // Ticket Types
 export type TicketPriority = 'critical' | 'high' | 'medium' | 'low';
 export type TicketStatus = 'open' | 'in_progress' | 'pending' | 'resolved' | 'closed';

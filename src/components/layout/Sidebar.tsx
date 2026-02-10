@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
     MapPin,
+    HardDrive,
     Ticket,
     FileText,
     Users,
@@ -23,7 +24,8 @@ interface SidebarProps {
 
 const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/sites', label: 'Sites & Devices', icon: MapPin },
+    { path: '/sites', label: 'Sites', icon: MapPin },
+    { path: '/devices', label: 'Devices', icon: HardDrive },
     { path: '/tickets', label: 'Tickets', icon: Ticket },
     { path: '/reports', label: 'Reports', icon: FileText },
     { path: '/users', label: 'Users & Roles', icon: Users },

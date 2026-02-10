@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout';
-import { Login, Dashboard, Sites, DeviceDetail, Tickets, Reports, Users, Settings } from './pages';
+import { Login, Dashboard, Sites, Devices, DeviceDetail, Tickets, Reports, Users, Settings } from './pages';
 
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -17,6 +17,8 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/sites" element={<Sites />} />
             <Route path="/sites/device/:deviceId" element={<DeviceDetail />} />
+            <Route path="/devices" element={<Devices />} />
+            <Route path="/devices/:deviceId" element={<DeviceDetail />} />
             <Route path="/tickets" element={<Tickets />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/users" element={<Users />} />

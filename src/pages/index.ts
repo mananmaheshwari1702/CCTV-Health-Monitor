@@ -1,6 +1,7 @@
 export { Login } from './Login';
 export { Dashboard } from './Dashboard';
 export { Sites } from './Sites';
+export { Devices } from './Devices';
 export { DeviceDetail } from './DeviceDetail';
 export { Tickets } from './Tickets';
 export { Reports } from './Reports';
