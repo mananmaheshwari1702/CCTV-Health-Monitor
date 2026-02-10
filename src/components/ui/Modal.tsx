@@ -80,7 +80,7 @@ export function Modal({
             <div
                 ref={modalRef}
                 tabIndex={-1}
-                className={`relative w-full ${sizeClasses[size]} bg-white dark:bg-slate-900 rounded-2xl shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-200 border border-slate-200 dark:border-slate-800`}
+                className={`relative w-full ${sizeClasses[size]} bg-white dark:bg-slate-800 rounded-2xl shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-200 border border-slate-200 dark:border-slate-700`}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={title ? 'modal-title' : undefined}
@@ -112,7 +112,7 @@ export function Modal({
 
                 {/* Footer */}
                 {footer && (
-                    <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 rounded-b-2xl">
+                    <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-b-2xl">
                         {footer}
                     </div>
                 )}
@@ -175,7 +175,7 @@ export function ConfirmModal({
                 </div>
             }
         >
-            <p className="text-slate-600 dark:text-slate-400">{message}</p>
+            <p className="text-slate-600 dark:text-slate-300">{message}</p>
         </Modal>
     );
 }

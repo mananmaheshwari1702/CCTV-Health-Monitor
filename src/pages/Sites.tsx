@@ -69,26 +69,26 @@ export function Sites() {
                                 <CardBody>
                                     <div className="flex items-start justify-between">
                                         <div className="flex items-start gap-4">
-                                            <div className="p-3 bg-slate-100 rounded-xl">
-                                                <MapPin className="w-6 h-6 text-slate-600" />
+                                            <div className="p-3 bg-slate-100 dark:bg-slate-800/80 dark:border dark:border-slate-700/50 rounded-xl">
+                                                <MapPin className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                                             </div>
                                             <div>
-                                                <h3 className="text-lg font-semibold text-slate-900">
+                                                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                                                     {site.name}
                                                 </h3>
-                                                <p className="text-sm text-slate-500">
+                                                <p className="text-sm text-slate-500 dark:text-slate-400">
                                                     {site.address}, {site.city}
                                                 </p>
                                                 <div className="flex items-center gap-4 mt-3">
                                                     <div className="flex items-center gap-1.5">
                                                         <Wifi className="w-4 h-4 text-emerald-500" />
-                                                        <span className="text-sm font-medium text-slate-700">
+                                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                                                             {site.onlineDevices}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center gap-1.5">
                                                         <WifiOff className="w-4 h-4 text-red-500" />
-                                                        <span className="text-sm font-medium text-slate-700">
+                                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                                                             {site.deviceCount - site.onlineDevices}
                                                         </span>
                                                     </div>
@@ -121,9 +121,9 @@ export function Sites() {
 
                             {/* Expanded Devices List */}
                             {isExpanded && (
-                                <div className="border-t border-slate-100 bg-slate-50 p-4">
+                                <div className="border-t border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/20 p-4">
                                     <div className="flex items-center justify-between mb-3">
-                                        <h4 className="text-sm font-medium text-slate-700">
+                                        <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
                                             Devices ({siteDevices.length})
                                         </h4>
                                         <Button variant="ghost" size="sm">
@@ -135,15 +135,15 @@ export function Sites() {
                                             <div
                                                 key={device.id}
                                                 onClick={() => navigate(`/sites/device/${device.id}`)}
-                                                className="flex items-center justify-between p-3 bg-white rounded-lg hover:shadow-sm cursor-pointer transition-shadow"
+                                                className="flex items-center justify-between p-3 bg-white dark:bg-slate-800/50 rounded-lg border border-transparent dark:border-slate-700/30 hover:shadow-sm cursor-pointer transition-all"
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-2 h-2 rounded-full bg-slate-300" />
+                                                    <div className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600" />
                                                     <div>
-                                                        <p className="text-sm font-medium text-slate-900">
+                                                        <p className="text-sm font-medium text-slate-900 dark:text-white">
                                                             {device.name}
                                                         </p>
-                                                        <p className="text-xs text-slate-500">
+                                                        <p className="text-xs text-slate-500 dark:text-slate-400">
                                                             {device.type.toUpperCase()} • {device.ipAddress}
                                                         </p>
                                                     </div>
@@ -169,9 +169,9 @@ export function Sites() {
 
             {filteredSites.length === 0 && (
                 <div className="text-center py-12">
-                    <MapPin className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-slate-700">No sites found</h3>
-                    <p className="text-slate-500 mt-1">
+                    <MapPin className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">No sites found</h3>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1">
                         Try adjusting your search criteria
                     </p>
                 </div>

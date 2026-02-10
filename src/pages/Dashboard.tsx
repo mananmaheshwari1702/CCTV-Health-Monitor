@@ -66,11 +66,11 @@ export function Dashboard() {
 
             {/* Tickets Summary */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-5 text-white">
+                <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-5 text-white shadow-lg shadow-blue-900/20">
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-blue-100 text-sm">Open Tickets</p>
-                            <p className="text-4xl font-bold mt-1">{dashboardStats.openTickets}</p>
+                            <p className="text-4xl font-bold mt-1 text-white">{dashboardStats.openTickets}</p>
                         </div>
                         <Ticket className="w-10 h-10 text-blue-300" />
                     </div>
@@ -82,34 +82,34 @@ export function Dashboard() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-xl p-5 shadow-sm">
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700/50">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-emerald-50 rounded-lg">
-                            <TrendingUp className="w-5 h-5 text-emerald-600" />
+                        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg">
+                            <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-slate-900">Resolution Rate</p>
-                            <p className="text-xs text-slate-500">Last 7 days</p>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">Resolution Rate</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-300">Last 7 days</p>
                         </div>
                     </div>
-                    <p className="text-3xl font-bold text-slate-900">87.5%</p>
-                    <div className="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <p className="text-3xl font-bold text-slate-900 dark:text-white">87.5%</p>
+                    <div className="mt-2 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div className="h-full bg-emerald-500 rounded-full" style={{ width: '87.5%' }} />
                     </div>
                 </div>
 
-                <div className="bg-white rounded-xl p-5 shadow-sm">
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-slate-700/50">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-blue-50 rounded-lg">
-                            <Clock className="w-5 h-5 text-blue-600" />
+                        <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                            <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-slate-900">Avg. Response Time</p>
-                            <p className="text-xs text-slate-500">Last 7 days</p>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">Avg. Response Time</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Last 7 days</p>
                         </div>
                     </div>
-                    <p className="text-3xl font-bold text-slate-900">2.4h</p>
-                    <p className="text-sm text-emerald-600 mt-2">↓ 15% from last week</p>
+                    <p className="text-3xl font-bold text-slate-900 dark:text-white">2.4h</p>
+                    <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-2">↓ 15% from last week</p>
                 </div>
             </div>
 
@@ -118,7 +118,7 @@ export function Dashboard() {
                 {/* Recent Alerts */}
                 <Card className="lg:col-span-2">
                     <CardHeader action={
-                        <Link to="/tickets" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                        <Link to="/tickets" className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
                             View all
                         </Link>
                     }>
@@ -141,12 +141,12 @@ export function Dashboard() {
                                 return (
                                     <div
                                         key={alert.id}
-                                        className={`flex items-start gap-3 p-3 rounded-lg border ${bgColors[alert.type]}`}
+                                        className={`flex items-start gap-3 p-3 rounded-lg border ${bgColors[alert.type]} dark:bg-slate-800/50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors`}
                                     >
                                         {icons[alert.type]}
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-slate-900">{alert.message}</p>
-                                            <p className="text-xs text-slate-500 mt-0.5">
+                                            <p className="text-sm font-medium text-slate-900 dark:text-white">{alert.message}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                                 {alert.deviceName} • {alert.siteName}
                                             </p>
                                         </div>
@@ -166,7 +166,7 @@ export function Dashboard() {
                 {/* Open Tickets */}
                 <Card>
                     <CardHeader action={
-                        <Link to="/tickets" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                        <Link to="/tickets" className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
                             View all
                         </Link>
                     }>
@@ -177,10 +177,10 @@ export function Dashboard() {
                             {tickets.slice(0, 4).map((ticket) => (
                                 <div
                                     key={ticket.id}
-                                    className="p-3 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
+                                    className="p-3 bg-slate-50 dark:bg-slate-900/30 border border-transparent dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/70 cursor-pointer transition-all"
                                 >
                                     <div className="flex items-start justify-between gap-2 mb-2">
-                                        <p className="text-sm font-medium text-slate-900 line-clamp-1">
+                                        <p className="text-sm font-medium text-slate-900 dark:text-white line-clamp-1">
                                             {ticket.title}
                                         </p>
                                         <Badge
@@ -196,7 +196,7 @@ export function Dashboard() {
                                             {ticket.priority}
                                         </Badge>
                                     </div>
-                                    <div className="flex items-center justify-between text-xs text-slate-500">
+                                    <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                                         <span>{ticket.siteName}</span>
                                         <span>{ticket.id}</span>
                                     </div>
@@ -221,39 +221,39 @@ export function Dashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <Link
                             to="/sites"
-                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
                         >
-                            <div className="p-3 bg-blue-100 rounded-full">
-                                <Camera className="w-5 h-5 text-blue-600" />
+                            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                                <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <span className="text-sm font-medium text-slate-700">View Devices</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">View Devices</span>
                         </Link>
                         <Link
                             to="/tickets"
-                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
                         >
-                            <div className="p-3 bg-emerald-100 rounded-full">
-                                <Ticket className="w-5 h-5 text-emerald-600" />
+                            <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                                <Ticket className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
-                            <span className="text-sm font-medium text-slate-700">New Ticket</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">New Ticket</span>
                         </Link>
                         <Link
                             to="/reports"
-                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
                         >
-                            <div className="p-3 bg-purple-100 rounded-full">
-                                <TrendingUp className="w-5 h-5 text-purple-600" />
+                            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                                <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                             </div>
-                            <span className="text-sm font-medium text-slate-700">Run Report</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Run Report</span>
                         </Link>
                         <Link
                             to="/users"
-                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                            className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
                         >
-                            <div className="p-3 bg-amber-100 rounded-full">
-                                <HeartCrack className="w-5 h-5 text-amber-600" />
+                            <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-full">
+                                <HeartCrack className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                             </div>
-                            <span className="text-sm font-medium text-slate-700">Health Check</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Health Check</span>
                         </Link>
                     </div>
                 </CardBody>

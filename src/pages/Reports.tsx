@@ -35,11 +35,11 @@ export function Reports() {
     };
 
     const reportColors = {
-        health: { bg: 'bg-emerald-50', icon: 'text-emerald-600' },
-        uptime: { bg: 'bg-blue-50', icon: 'text-blue-600' },
-        recording: { bg: 'bg-purple-50', icon: 'text-purple-600' },
-        tickets: { bg: 'bg-amber-50', icon: 'text-amber-600' },
-        custom: { bg: 'bg-slate-50', icon: 'text-slate-600' },
+        health: { bg: 'bg-emerald-50 dark:bg-emerald-900/20', icon: 'text-emerald-600 dark:text-emerald-400' },
+        uptime: { bg: 'bg-blue-50 dark:bg-blue-900/20', icon: 'text-blue-600 dark:text-blue-400' },
+        recording: { bg: 'bg-purple-50 dark:bg-purple-900/20', icon: 'text-purple-600 dark:text-purple-400' },
+        tickets: { bg: 'bg-amber-50 dark:bg-amber-900/20', icon: 'text-amber-600 dark:text-amber-400' },
+        custom: { bg: 'bg-slate-50 dark:bg-slate-800/50', icon: 'text-slate-600 dark:text-slate-300' },
     };
 
     return (
@@ -47,8 +47,8 @@ export function Reports() {
             {/* Header */}
             <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
                 <div>
-                    <h2 className="text-lg font-semibold text-slate-900">Reports</h2>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Reports</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-300 mt-1">
                         Generate and download system reports
                     </p>
                 </div>
@@ -74,12 +74,12 @@ export function Reports() {
                 <Card>
                     <CardBody>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-50 rounded-lg">
-                                <FileText className="w-5 h-5 text-blue-600" />
+                            <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                                <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-slate-900">24</p>
-                                <p className="text-sm text-slate-500">Reports Generated</p>
+                                <p className="text-2xl font-bold text-slate-900 dark:text-white">24</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-300">Reports Generated</p>
                             </div>
                         </div>
                     </CardBody>
@@ -87,12 +87,12 @@ export function Reports() {
                 <Card>
                     <CardBody>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-emerald-50 rounded-lg">
-                                <Play className="w-5 h-5 text-emerald-600" />
+                            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg">
+                                <Play className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-slate-900">4</p>
-                                <p className="text-sm text-slate-500">Scheduled Active</p>
+                                <p className="text-2xl font-bold text-slate-900 dark:text-white">4</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-300">Scheduled Active</p>
                             </div>
                         </div>
                     </CardBody>
@@ -100,12 +100,12 @@ export function Reports() {
                 <Card>
                     <CardBody>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-amber-50 rounded-lg">
-                                <Download className="w-5 h-5 text-amber-600" />
+                            <div className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg">
+                                <Download className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-slate-900">156</p>
-                                <p className="text-sm text-slate-500">Total Downloads</p>
+                                <p className="text-2xl font-bold text-slate-900 dark:text-white">156</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Total Downloads</p>
                             </div>
                         </div>
                     </CardBody>
@@ -113,12 +113,12 @@ export function Reports() {
                 <Card>
                     <CardBody>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-purple-50 rounded-lg">
-                                <Clock className="w-5 h-5 text-purple-600" />
+                            <div className="p-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
+                                <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-slate-900">2h ago</p>
-                                <p className="text-sm text-slate-500">Last Generated</p>
+                                <p className="text-2xl font-bold text-slate-900 dark:text-white">2h ago</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Last Generated</p>
                             </div>
                         </div>
                     </CardBody>
@@ -141,10 +141,10 @@ export function Reports() {
                                     <div className="flex-1">
                                         <div className="flex items-start justify-between">
                                             <div>
-                                                <h3 className="font-semibold text-slate-900">
+                                                <h3 className="font-semibold text-slate-900 dark:text-white">
                                                     {report.name}
                                                 </h3>
-                                                <p className="text-sm text-slate-500 mt-1">
+                                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                                                     {report.description}
                                                 </p>
                                             </div>
@@ -152,7 +152,7 @@ export function Reports() {
                                                 {report.schedule}
                                             </Badge>
                                         </div>
-                                        <div className="flex items-center gap-4 mt-4 text-sm text-slate-500">
+                                        <div className="flex items-center gap-4 mt-4 text-sm text-slate-500 dark:text-slate-400">
                                             <span className="flex items-center gap-1">
                                                 <Clock className="w-4 h-4" />
                                                 Last: {new Date(report.lastGenerated).toLocaleDateString()}
@@ -184,13 +184,13 @@ export function Reports() {
                 <CardHeader>Custom Report Builder</CardHeader>
                 <CardBody>
                     <div className="text-center py-8">
-                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800/80 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200 dark:border-slate-700/50">
                             <FileText className="w-8 h-8 text-slate-400" />
                         </div>
-                        <h3 className="text-lg font-medium text-slate-900">
+                        <h3 className="text-lg font-medium text-slate-900 dark:text-white">
                             Build a Custom Report
                         </h3>
-                        <p className="text-slate-500 mt-2 max-w-md mx-auto">
+                        <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto">
                             Create custom reports by selecting specific metrics, sites, and date
                             ranges to analyze your surveillance data.
                         </p>

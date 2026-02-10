@@ -22,7 +22,7 @@ export function Input({
             {label && (
                 <label
                     htmlFor={inputId}
-                    className="block text-sm font-medium text-slate-700 mb-1.5"
+                    className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
                 >
                     {label}
                 </label>
@@ -31,7 +31,7 @@ export function Input({
                 id={inputId}
                 className={`
           w-full px-3.5 py-2.5 text-sm text-slate-900 dark:text-white
-          bg-white dark:bg-slate-800 border rounded-lg
+          bg-white dark:bg-slate-900 border rounded-lg
           placeholder:text-slate-400
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
@@ -66,7 +66,7 @@ export function SearchInput({
                 placeholder={placeholder}
                 className={`
           w-full pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white
-          bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg
+          bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-600 rounded-lg
           placeholder:text-slate-400
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           ${className}
@@ -100,7 +100,7 @@ export function Select({
             {label && (
                 <label
                     htmlFor={selectId}
-                    className="block text-sm font-medium text-slate-700 mb-1.5"
+                    className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
                 >
                     {label}
                 </label>
@@ -109,7 +109,7 @@ export function Select({
                 id={selectId}
                 className={`
           px-3.5 py-2.5 text-sm text-slate-900 dark:text-white
-          bg-white dark:bg-slate-800 border rounded-lg appearance-none
+          bg-white dark:bg-slate-900 border rounded-lg appearance-none
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
           ${error ? 'border-red-300' : 'border-slate-300 dark:border-slate-600'}
@@ -148,7 +148,7 @@ export function Textarea({
             {label && (
                 <label
                     htmlFor={textareaId}
-                    className="block text-sm font-medium text-slate-700 mb-1.5"
+                    className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
                 >
                     {label}
                 </label>
@@ -157,7 +157,7 @@ export function Textarea({
                 id={textareaId}
                 className={`
           w-full px-3.5 py-2.5 text-sm text-slate-900 dark:text-white
-          bg-white dark:bg-slate-800 border rounded-lg
+          bg-white dark:bg-slate-900 border rounded-lg
           placeholder:text-slate-400
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
           disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed

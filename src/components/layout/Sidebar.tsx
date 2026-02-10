@@ -51,7 +51,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose
                             <h1 className="text-lg font-bold text-white whitespace-nowrap">
                                 CCTV Monitor
                             </h1>
-                            <p className="text-xs text-slate-400">Health Dashboard</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-300">Health Dashboard</p>
                         </div>
                     )}
                 </div>

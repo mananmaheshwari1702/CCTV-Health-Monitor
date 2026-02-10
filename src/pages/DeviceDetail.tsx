@@ -38,7 +38,7 @@ export function DeviceDetail() {
     if (!device) {
         return (
             <div className="text-center py-12">
-                <h2 className="text-xl font-semibold text-slate-900">Device not found</h2>
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Device not found</h2>
                 <Button variant="outline" onClick={() => navigate('/sites')} className="mt-4">
                     Back to Sites
                 </Button>
@@ -51,7 +51,7 @@ export function DeviceDetail() {
             {/* Back Button */}
             <button
                 onClick={() => navigate('/sites')}
-                className="flex items-center gap-2 text-slate-600 hover:text-slate-900"
+                className="flex items-center gap-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
             >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-sm font-medium">Back to Sites</span>
@@ -60,16 +60,16 @@ export function DeviceDetail() {
             {/* Device Header */}
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 <div className="flex items-start gap-4">
-                    <div className="p-4 bg-slate-100 rounded-xl">
-                        <Camera className="w-8 h-8 text-slate-600" />
+                    <div className="p-4 bg-slate-100 dark:bg-slate-800/80 dark:border dark:border-slate-700/50 rounded-xl">
+                        <Camera className="w-8 h-8 text-slate-600 dark:text-slate-400" />
                     </div>
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-bold text-slate-900">{device.name}</h1>
+                            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{device.name}</h1>
                             <StatusBadge status={device.status} />
                         </div>
-                        <p className="text-slate-500 mt-1">{device.siteName}</p>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
+                        <p className="text-slate-500 dark:text-slate-400 mt-1">{device.siteName}</p>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-slate-500 dark:text-slate-400">
                             <span className="flex items-center gap-1">
                                 <MapPin className="w-4 h-4" />
                                 {device.ipAddress}
@@ -104,8 +104,8 @@ export function DeviceDetail() {
                                 )}
                             </div>
                             <div>
-                                <p className="text-sm text-slate-500">Connection</p>
-                                <p className="text-lg font-semibold text-slate-900 capitalize">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Connection</p>
+                                <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
                                     {device.status}
                                 </p>
                             </div>
@@ -126,8 +126,8 @@ export function DeviceDetail() {
                                 )}
                             </div>
                             <div>
-                                <p className="text-sm text-slate-500">Health</p>
-                                <p className="text-lg font-semibold text-slate-900 capitalize">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Health</p>
+                                <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
                                     {device.health}
                                 </p>
                             </div>
@@ -142,8 +142,8 @@ export function DeviceDetail() {
                                 <Video className="w-5 h-5 text-purple-600" />
                             </div>
                             <div>
-                                <p className="text-sm text-slate-500">Recording</p>
-                                <p className="text-lg font-semibold text-slate-900 capitalize">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Recording</p>
+                                <p className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
                                     {device.recordingStatus.replace('_', ' ')}
                                 </p>
                             </div>
@@ -158,8 +158,8 @@ export function DeviceDetail() {
                                 <HardDrive className="w-5 h-5 text-amber-600" />
                             </div>
                             <div>
-                                <p className="text-sm text-slate-500">Storage</p>
-                                <p className="text-lg font-semibold text-slate-900">72%</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Storage</p>
+                                <p className="text-lg font-semibold text-slate-900 dark:text-white">72%</p>
                             </div>
                         </div>
                     </CardBody>
@@ -173,39 +173,39 @@ export function DeviceDetail() {
                     <CardHeader>Device Information</CardHeader>
                     <CardBody>
                         <div className="space-y-4">
-                            <div className="flex justify-between py-2 border-b border-slate-100">
-                                <span className="text-sm text-slate-500">Device ID</span>
-                                <span className="text-sm font-mono font-medium text-slate-900">
+                            <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/50">
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Device ID</span>
+                                <span className="text-sm font-mono font-medium text-slate-900 dark:text-white">
                                     {device.id}
                                 </span>
                             </div>
-                            <div className="flex justify-between py-2 border-b border-slate-100">
-                                <span className="text-sm text-slate-500">Type</span>
-                                <span className="text-sm font-medium text-slate-900 uppercase">
+                            <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/50">
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Type</span>
+                                <span className="text-sm font-medium text-slate-900 dark:text-white uppercase">
                                     {device.type}
                                 </span>
                             </div>
-                            <div className="flex justify-between py-2 border-b border-slate-100">
-                                <span className="text-sm text-slate-500">Model</span>
-                                <span className="text-sm font-medium text-slate-900">
+                            <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/50">
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Model</span>
+                                <span className="text-sm font-medium text-slate-900 dark:text-white">
                                     {device.model}
                                 </span>
                             </div>
-                            <div className="flex justify-between py-2 border-b border-slate-100">
-                                <span className="text-sm text-slate-500">Firmware</span>
-                                <span className="text-sm font-medium text-slate-900">
+                            <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/50">
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Firmware</span>
+                                <span className="text-sm font-medium text-slate-900 dark:text-white">
                                     {device.firmware}
                                 </span>
                             </div>
-                            <div className="flex justify-between py-2 border-b border-slate-100">
-                                <span className="text-sm text-slate-500">IP Address</span>
-                                <span className="text-sm font-mono font-medium text-slate-900">
+                            <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800/50">
+                                <span className="text-sm text-slate-500 dark:text-slate-400">IP Address</span>
+                                <span className="text-sm font-mono font-medium text-slate-900 dark:text-white">
                                     {device.ipAddress}
                                 </span>
                             </div>
                             <div className="flex justify-between py-2">
-                                <span className="text-sm text-slate-500">Site</span>
-                                <span className="text-sm font-medium text-slate-900">
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Site</span>
+                                <span className="text-sm font-medium text-slate-900 dark:text-white">
                                     {device.siteName}
                                 </span>
                             </div>
@@ -238,14 +238,14 @@ export function DeviceDetail() {
                                 {deviceTickets.map((ticket) => (
                                     <div
                                         key={ticket.id}
-                                        className="p-3 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer"
+                                        className="p-3 bg-slate-50 dark:bg-slate-900/30 border border-transparent dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/70 cursor-pointer transition-all"
                                     >
                                         <div className="flex items-start justify-between gap-2">
                                             <div>
-                                                <p className="text-sm font-medium text-slate-900">
+                                                <p className="text-sm font-medium text-slate-900 dark:text-white">
                                                     {ticket.title}
                                                 </p>
-                                                <p className="text-xs text-slate-500 mt-1">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                                     {ticket.id} • {ticket.assignee}
                                                 </p>
                                             </div>
@@ -275,10 +275,10 @@ export function DeviceDetail() {
                             <div key={index} className="flex-1 flex flex-col items-center gap-1">
                                 <div
                                     className={`w-full rounded-t ${value === 100
-                                            ? 'bg-emerald-500'
-                                            : value >= 90
-                                                ? 'bg-amber-500'
-                                                : 'bg-red-500'
+                                        ? 'bg-emerald-500'
+                                        : value >= 90
+                                            ? 'bg-amber-500'
+                                            : 'bg-red-500'
                                         }`}
                                     style={{ height: `${value}%` }}
                                 />

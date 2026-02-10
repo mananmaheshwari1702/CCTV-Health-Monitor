@@ -67,13 +67,13 @@ export function Login() {
                     </div>
                 </div>
 
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                     © 2026 CCTV Health Monitor. All rights reserved.
                 </p>
             </div>
 
             {/* Right side - Login Form */}
-            <div className="flex-1 flex items-center justify-center p-8 bg-slate-50">
+            <div className="flex-1 flex items-center justify-center p-8 bg-slate-50 dark:bg-slate-900">
                 <div className="w-full max-w-md">
                     {/* Mobile logo */}
                     <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
@@ -81,26 +81,26 @@ export function Login() {
                             <Camera className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-slate-900">CCTV Monitor</h1>
-                            <p className="text-sm text-slate-500">Health Dashboard</p>
+                            <h1 className="text-xl font-bold text-slate-900 dark:text-white">CCTV Monitor</h1>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Health Dashboard</p>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-xl p-8">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 border border-slate-200 dark:border-slate-700/50">
                         <div className="text-center mb-8">
-                            <h2 className="text-2xl font-bold text-slate-900">Welcome back</h2>
-                            <p className="text-slate-500 mt-2">Sign in to your account</p>
+                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h2>
+                            <p className="text-slate-500 dark:text-slate-400 mt-2">Sign in to your account</p>
                         </div>
 
                         {error && (
-                            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/50 rounded-lg text-sm text-red-600 dark:text-red-400">
                                 {error}
                             </div>
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                                     Email address
                                 </label>
                                 <div className="relative">
@@ -110,13 +110,13 @@ export function Login() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="admin@company.com"
-                                        className="w-full pl-12 pr-4 py-3 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                        className="w-full pl-12 pr-4 py-3 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                                     Password
                                 </label>
                                 <div className="relative">
@@ -126,12 +126,12 @@ export function Login() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="••••••••"
-                                        className="w-full pl-12 pr-12 py-3 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                        className="w-full pl-12 pr-12 py-3 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                                     >
                                         {showPassword ? (
                                             <EyeOff className="w-5 h-5" />
@@ -148,11 +148,11 @@ export function Login() {
                                         type="checkbox"
                                         checked={rememberMe}
                                         onChange={(e) => setRememberMe(e.target.checked)}
-                                        className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                                        className="w-4 h-4 text-blue-600 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500 dark:bg-slate-900/50"
                                     />
-                                    <span className="text-sm text-slate-600">Remember me</span>
+                                    <span className="text-sm text-slate-600 dark:text-slate-400">Remember me</span>
                                 </label>
-                                <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                                <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
                                     Forgot password?
                                 </a>
                             </div>
@@ -168,7 +168,7 @@ export function Login() {
                         </form>
 
                         <div className="mt-6 text-center">
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
                                 Demo credentials: any email + password
                             </p>
                         </div>

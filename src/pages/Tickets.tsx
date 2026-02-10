@@ -47,7 +47,7 @@ export function Tickets() {
             key: 'id',
             header: 'Ticket ID',
             render: (ticket: Ticket) => (
-                <span className="font-mono text-sm text-slate-600">{ticket.id}</span>
+                <span className="font-mono text-sm text-slate-600 dark:text-slate-400">{ticket.id}</span>
             ),
         },
         {
@@ -56,7 +56,7 @@ export function Tickets() {
             render: (ticket: Ticket) => (
                 <div>
                     <p className="font-medium text-slate-900 dark:text-white">{ticket.title}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{ticket.siteName}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-300 mt-0.5">{ticket.siteName}</p>
                 </div>
             ),
         },
@@ -86,7 +86,7 @@ export function Tickets() {
             key: 'createdAt',
             header: 'Created',
             render: (ticket: Ticket) => (
-                <span className="text-sm text-slate-500">
+                <span className="text-sm text-slate-500 dark:text-slate-400">
                     {new Date(ticket.createdAt).toLocaleDateString()}
                 </span>
             ),
@@ -141,7 +141,7 @@ export function Tickets() {
                     <CardBody>
                         <div className="text-center">
                             <p className="text-2xl font-bold text-slate-900 dark:text-white">{tickets.length}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Total Tickets</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-300">Total Tickets</p>
                         </div>
                     </CardBody>
                 </Card>
@@ -151,7 +151,7 @@ export function Tickets() {
                             <p className="text-2xl font-bold text-red-600 dark:text-red-500">
                                 {tickets.filter((t) => t.status === 'open').length}
                             </p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Open</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-300">Open</p>
                         </div>
                     </CardBody>
                 </Card>
@@ -161,7 +161,7 @@ export function Tickets() {
                             <p className="text-2xl font-bold text-blue-600 dark:text-blue-500">
                                 {tickets.filter((t) => t.status === 'in_progress').length}
                             </p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">In Progress</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-300">In Progress</p>
                         </div>
                     </CardBody>
                 </Card>
@@ -171,7 +171,7 @@ export function Tickets() {
                             <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">
                                 {tickets.filter((t) => t.status === 'resolved' || t.status === 'closed').length}
                             </p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Resolved</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-300">Resolved</p>
                         </div>
                     </CardBody>
                 </Card>
@@ -188,11 +188,11 @@ export function Tickets() {
 
             {/* Ticket Detail Sidebar */}
             {selectedTicket && (
-                <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white dark:bg-slate-900 shadow-2xl z-50 overflow-y-auto border-l border-slate-200 dark:border-slate-800">
+                <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white dark:bg-slate-800 shadow-2xl z-50 overflow-y-auto border-l border-slate-200 dark:border-slate-700">
                     <div className="p-6">
                         <div className="flex items-start justify-between mb-6">
                             <div>
-                                <p className="text-sm font-mono text-slate-500 dark:text-slate-400">{selectedTicket.id}</p>
+                                <p className="text-sm font-mono text-slate-500 dark:text-slate-300">{selectedTicket.id}</p>
                                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white mt-1">
                                     {selectedTicket.title}
                                 </h2>

@@ -94,7 +94,7 @@ export function Table<T>({
                             {columns.map((column) => (
                                 <th
                                     key={String(column.key)}
-                                    className={`px-4 py-3 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider ${alignClasses[column.align || 'left']
+                                    className={`px-4 py-3 text-xs font-semibold text-slate-600 dark:text-slate-200 uppercase tracking-wider ${alignClasses[column.align || 'left']
                                         } ${column.sortable ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800' : ''}`}
                                     style={{ width: column.width }}
                                     onClick={() => column.sortable && onSort?.(String(column.key))}
