@@ -5,8 +5,6 @@ export interface Site {
     address: string;
     city: string;
     status: 'active' | 'inactive' | 'maintenance';
-    deviceCount: number;
-    onlineDevices: number;
     lastSync: string;
 }
 

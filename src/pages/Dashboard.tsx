@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
     Camera,
     Wifi,
@@ -25,10 +25,33 @@ import { useData } from '../context/DataContext';
 import { AlertBanner } from '../components/dashboard/AlertBanner';
 
 export function Dashboard() {
+    const navigate = useNavigate();
     const { dashboardStats, alerts, tickets } = useData();
 
     // Get only active/recent alerts for display
     const recentAlerts = alerts.slice(0, 5);
+
+    // Calculate Resolution Rate
+    const resolutionRate = React.useMemo(() => {
+        if (tickets.length === 0) return 0;
+        const resolvedCount = tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length;
+        return Math.round((resolvedCount / tickets.length) * 100);
+    }, [tickets]);
+
+    // Calculate Avg Response Time
+    const avgResponseTime = React.useMemo(() => {
+        const respondedTickets = tickets.filter(t => t.comments && t.comments.length > 0);
+        if (respondedTickets.length === 0) return 0;
+
+        const totalResponseTime = respondedTickets.reduce((acc, ticket) => {
+            const firstResponse = ticket.comments![0].createdAt; // assertions safe due to filter
+            const created = ticket.createdAt;
+            return acc + (new Date(firstResponse).getTime() - new Date(created).getTime());
+        }, 0);
+
+        const avgMs = totalResponseTime / respondedTickets.length;
+        return (avgMs / (1000 * 60 * 60)).toFixed(1); // Convert to hours
+    }, [tickets]);
 
     return (
         <div className="space-y-6">
@@ -104,12 +127,12 @@ export function Dashboard() {
                         </div>
                         <div>
                             <p className="text-sm font-medium text-slate-900 dark:text-white">Resolution Rate</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">Last 7 days</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">All time</p>
                         </div>
                     </div>
-                    <p className="text-3xl font-bold text-slate-900 dark:text-white">87.5%</p>
+                    <p className="text-3xl font-bold text-slate-900 dark:text-white">{resolutionRate}%</p>
                     <div className="mt-2 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: '87.5%' }} />
+                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${resolutionRate}%` }} />
                     </div>
                 </div>
 
@@ -120,11 +143,11 @@ export function Dashboard() {
                         </div>
                         <div>
                             <p className="text-sm font-medium text-slate-900 dark:text-white">Avg. Response Time</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">Last 7 days</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">First response</p>
                         </div>
                     </div>
-                    <p className="text-3xl font-bold text-slate-900 dark:text-white">2.4h</p>
-                    <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-2">↓ 15% from last week</p>
+                    <p className="text-3xl font-bold text-slate-900 dark:text-white">{avgResponseTime}h</p>
+                    <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-2">Based on activity</p>
                 </div>
             </div>
 
@@ -192,6 +215,7 @@ export function Dashboard() {
                             {tickets.slice(0, 4).map((ticket) => (
                                 <div
                                     key={ticket.id}
+                                    onClick={() => navigate(`/tickets/${ticket.id}`)}
                                     className="p-3 bg-slate-50 dark:bg-slate-900/30 border border-transparent dark:border-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/70 cursor-pointer transition-all"
                                 >
                                     <div className="flex items-start justify-between gap-2 mb-2">
@@ -219,7 +243,7 @@ export function Dashboard() {
                             ))}
                         </div>
                         <div className="mt-4">
-                            <Link to="/tickets">
+                            <Link to="/tickets?action=create">
                                 <Button variant="outline" fullWidth size="sm" icon={<ArrowRight className="w-4 h-4" />} iconPosition="right">
                                     Create Ticket
                                 </Button>

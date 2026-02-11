@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Filter,
     Plus,
@@ -28,7 +28,8 @@ const ITEMS_PER_PAGE = 10;
 
 export function Tickets() {
     const navigate = useNavigate();
-    const { tickets, addTicket, deleteTicket } = useData();
+    const [searchParams] = useSearchParams();
+    const { tickets, devices, addTicket, deleteTicket } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [priorityFilter, setPriorityFilter] = useState<string>('all');
@@ -37,17 +38,25 @@ export function Tickets() {
     const [currentPage, setCurrentPage] = useState(1);
     const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string }>({ isOpen: false, id: '' });
 
+    React.useEffect(() => {
+        if (searchParams.get('action') === 'create') {
+            setShowCreateModal(true);
+        }
+    }, [searchParams]);
+
     // New Ticket Form State
     const [newTicket, setNewTicket] = useState({
         title: '',
         description: '',
         priority: 'medium',
-        device: '',
-        site: 'Central Bank HQ'
+        deviceId: ''
     });
 
     const handleCreateTicket = (e: React.FormEvent) => {
         e.preventDefault();
+
+        const selectedDevice = devices.find(d => d.id === newTicket.deviceId);
+        if (!selectedDevice) return;
 
         const ticket: TicketType = {
             id: `TKT-${Math.floor(Math.random() * 10000)}`,
@@ -55,9 +64,9 @@ export function Tickets() {
             description: newTicket.description,
             priority: newTicket.priority as any,
             status: 'open',
-            deviceId: 'dev-001', // mock
-            deviceName: newTicket.device || 'Unknown Device',
-            siteName: newTicket.site,
+            deviceId: selectedDevice.id,
+            deviceName: selectedDevice.name,
+            siteName: selectedDevice.siteName,
             assignee: 'Unassigned',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -66,7 +75,7 @@ export function Tickets() {
 
         addTicket(ticket);
         setShowCreateModal(false);
-        setNewTicket({ title: '', description: '', priority: 'medium', device: '', site: 'Central Bank HQ' });
+        setNewTicket({ title: '', description: '', priority: 'medium', deviceId: '' });
     };
 
     const handleDeleteTicket = (ticketId: string) => {
@@ -340,12 +349,14 @@ export function Tickets() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Device Name</label>
-                            <Input
-                                value={newTicket.device}
-                                onChange={e => setNewTicket({ ...newTicket, device: e.target.value })}
-                                placeholder="e.g. Lobby Cam"
-                                required
+                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Device</label>
+                            <Select
+                                value={newTicket.deviceId}
+                                onChange={e => setNewTicket({ ...newTicket, deviceId: e.target.value })}
+                                options={[
+                                    { value: '', label: 'Select Device' },
+                                    ...devices.map(d => ({ value: d.id, label: `${d.name} (${d.siteName})` }))
+                                ]}
                             />
                         </div>
                         <div>

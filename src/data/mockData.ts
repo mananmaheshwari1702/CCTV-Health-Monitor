@@ -8,8 +8,6 @@ export const sites: Site[] = [
         address: '123 Main Street',
         city: 'New York',
         status: 'active',
-        deviceCount: 24,
-        onlineDevices: 22,
         lastSync: '2026-02-09T14:00:00Z',
     },
     {
@@ -18,8 +16,6 @@ export const sites: Site[] = [
         address: '456 Finance Ave',
         city: 'Chicago',
         status: 'active',
-        deviceCount: 48,
-        onlineDevices: 47,
         lastSync: '2026-02-09T14:05:00Z',
     },
     {
@@ -28,8 +24,6 @@ export const sites: Site[] = [
         address: '789 Airport Blvd',
         city: 'Los Angeles',
         status: 'active',
-        deviceCount: 96,
-        onlineDevices: 89,
         lastSync: '2026-02-09T13:55:00Z',
     },
     {
@@ -38,8 +32,6 @@ export const sites: Site[] = [
         address: '321 Port Street',
         city: 'Seattle',
         status: 'maintenance',
-        deviceCount: 16,
-        onlineDevices: 12,
         lastSync: '2026-02-09T12:30:00Z',
     },
     {
@@ -48,8 +40,6 @@ export const sites: Site[] = [
         address: '555 Innovation Dr',
         city: 'San Francisco',
         status: 'active',
-        deviceCount: 64,
-        onlineDevices: 63,
         lastSync: '2026-02-09T14:10:00Z',
     },
 ];

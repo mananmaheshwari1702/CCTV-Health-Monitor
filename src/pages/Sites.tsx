@@ -93,8 +93,6 @@ export function Sites() {
                 address: formData.address,
                 city: formData.city,
                 status: formData.status as any,
-                deviceCount: 0,
-                onlineDevices: 0,
                 lastSync: new Date().toISOString()
             };
             addSite(site);
@@ -174,10 +172,16 @@ export function Sites() {
             key: 'devices' as keyof Site,
             header: 'Devices',
             render: (site: Site) => {
-                const deviceCount = getSiteDevices(site.id).length;
+                const siteDevices = getSiteDevices(site.id);
+                const deviceCount = siteDevices.length;
+                const onlineCount = siteDevices.filter(d => d.status === 'online').length;
+
                 return (
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-1">
                         <Badge variant="neutral">{deviceCount} Devices</Badge>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                            {onlineCount} Online
+                        </span>
                     </div>
                 );
             },
