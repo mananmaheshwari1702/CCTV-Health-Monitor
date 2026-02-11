@@ -21,10 +21,12 @@ import {
     Badge,
     Select,
 } from '../components/ui';
+import { useToast } from '../components/ui';
 import { reports } from '../data/mockData';
 
 export function Reports() {
     const [selectedPeriod, setSelectedPeriod] = useState('last_7_days');
+    const toast = useToast();
 
     const reportIcons = {
         health: TrendingUp,
@@ -66,7 +68,7 @@ export function Reports() {
                     <Button
                         variant="outline"
                         icon={<Calendar className="w-4 h-4" />}
-                        onClick={() => alert('Schedule Report feature coming soon!')}
+                        onClick={() => toast.info('Schedule Report feature coming soon!')}
                     >
                         Schedule
                     </Button>
@@ -171,7 +173,7 @@ export function Reports() {
                                         variant="primary"
                                         size="sm"
                                         icon={<Play className="w-4 h-4" />}
-                                        onClick={() => alert(`Generating ${report.name} report...`)}
+                                        onClick={() => toast.success(`Generating ${report.name} report...`)}
                                     >
                                         Generate Now
                                     </Button>
@@ -179,7 +181,7 @@ export function Reports() {
                                         variant="outline"
                                         size="sm"
                                         icon={<Download className="w-4 h-4" />}
-                                        onClick={() => alert(`Downloading last ${report.name} report...`)}
+                                        onClick={() => toast.success(`Downloading last ${report.name} report...`)}
                                     >
                                         Download Last
                                     </Button>
@@ -187,7 +189,7 @@ export function Reports() {
                                         variant="ghost"
                                         size="sm"
                                         icon={<Settings className="w-4 h-4" />}
-                                        onClick={() => alert(`Configure ${report.name} report settings...`)}
+                                        onClick={() => toast.info(`Configure ${report.name} report settings coming soon`)}
                                     >
                                         Configure
                                     </Button>
@@ -215,7 +217,7 @@ export function Reports() {
                         </p>
                         <Button
                             className="mt-6"
-                            onClick={() => alert('Custom Report Builder coming soon!')}
+                            onClick={() => toast.info('Custom Report Builder coming soon!')}
                         >
                             Create Custom Report
                         </Button>

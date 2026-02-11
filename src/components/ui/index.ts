@@ -6,3 +6,4 @@ export { StatsCard, MiniStatsCard } from './StatsCard';
 export { Table, Pagination } from './Table';
 export { Modal, ConfirmModal } from './Modal';
 export { Input, SearchInput, Select, Textarea } from './Input';
+export { ToastProvider, useToast } from './Toast';

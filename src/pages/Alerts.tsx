@@ -1,46 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     AlertTriangle,
     AlertCircle,
     Info,
     Filter,
-    CheckCircle,
-    XCircle,
     Clock,
-    Search,
     Trash2
 } from 'lucide-react';
-import { Card, CardHeader, CardBody, Table, Badge, Button, Input, Select, SearchInput } from '../components/ui';
+import { Card, CardBody, Table, Pagination, Badge, Button, Select, SearchInput, ConfirmModal } from '../components/ui';
 import { useData } from '../context/DataContext';
 import { PermissionGuard } from '../components/auth/PermissionGuard';
-import type { Alert, AlertStatus } from '../types';
+import type { Alert } from '../types';
 
 export function Alerts() {
     const { alerts, updateAlertStatus, deleteAlert } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<string>('all');
     const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [showFilters, setShowFilters] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string }>({ isOpen: false, id: '' });
+
+    const ITEMS_PER_PAGE = 10;
 
     const handleAction = (alertId: string, action: 'acknowledge' | 'resolve') => {
         const newStatus = action === 'acknowledge' ? 'acknowledged' : 'resolved';
         updateAlertStatus(alertId, newStatus);
     };
 
-    const filteredAlerts = alerts.filter(alert => {
-        const matchesSearch =
-            alert.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            alert.deviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            alert.siteName.toLowerCase().includes(searchTerm.toLowerCase());
+    const filteredAlerts = useMemo(() => {
+        return alerts.filter(alert => {
+            const matchesSearch =
+                alert.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                alert.deviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                alert.siteName.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesType = typeFilter === 'all' || alert.type === typeFilter;
-        const matchesStatus = statusFilter === 'all' || alert.status === statusFilter;
+            const matchesType = typeFilter === 'all' || alert.type === typeFilter;
+            const matchesStatus = statusFilter === 'all' || alert.status === statusFilter;
 
-        return matchesSearch && matchesType && matchesStatus;
-    });
+            return matchesSearch && matchesType && matchesStatus;
+        });
+    }, [alerts, searchTerm, typeFilter, statusFilter]);
+
+    const totalPages = Math.ceil(filteredAlerts.length / ITEMS_PER_PAGE);
+    const paginatedAlerts = filteredAlerts.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    useMemo(() => {
+        if (currentPage > totalPages && totalPages > 0) setCurrentPage(1);
+    }, [totalPages, currentPage]);
 
     const columns = [
         {
-            key: 'type',
+            key: 'type' as keyof Alert,
             header: 'Severity',
             render: (alert: Alert) => {
                 const config = {
@@ -57,7 +71,7 @@ export function Alerts() {
             }
         },
         {
-            key: 'message',
+            key: 'message' as keyof Alert,
             header: 'Message',
             render: (alert: Alert) => (
                 <div>
@@ -69,7 +83,7 @@ export function Alerts() {
             )
         },
         {
-            key: 'status',
+            key: 'status' as keyof Alert,
             header: 'Status',
             render: (alert: Alert) => {
                 const styles = {
@@ -85,7 +99,7 @@ export function Alerts() {
             }
         },
         {
-            key: 'timestamp',
+            key: 'timestamp' as keyof Alert,
             header: 'Time',
             render: (alert: Alert) => (
                 <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-sm">
@@ -128,7 +142,7 @@ export function Alerts() {
                             className="text-slate-400 hover:text-red-500"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                if (window.confirm('Delete this alert?')) deleteAlert(alert.id);
+                                setDeleteConfirm({ isOpen: true, id: alert.id });
                             }}
                         >
                             <Trash2 className="w-4 h-4" />
@@ -141,53 +155,93 @@ export function Alerts() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white">System Alerts</h1>
-                    <p className="text-slate-500 dark:text-slate-400">Monitor and manage critical system events</p>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1">Monitor and manage critical system events</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <SearchInput
-                        placeholder="Search alerts..."
-                        onSearch={setSearchTerm}
-                    />
-                    <div className="w-48">
-                        <Select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            options={[
-                                { value: 'all', label: 'All Status' },
-                                { value: 'active', label: 'Active' },
-                                { value: 'acknowledged', label: 'Acknowledged' },
-                                { value: 'resolved', label: 'Resolved' },
-                            ]}
-                        />
-                    </div>
-                    <div className="w-48">
-                        <Select
-                            value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value)}
-                            options={[
-                                { value: 'all', label: 'All Severities' },
-                                { value: 'error', label: 'Error' },
-                                { value: 'warning', label: 'Warning' },
-                                { value: 'info', label: 'Info' },
-                            ]}
-                        />
-                    </div>
+                <div className="flex gap-3">
+                    <Button
+                        variant={showFilters ? 'primary' : 'outline'}
+                        icon={<Filter className="w-4 h-4" />}
+                        onClick={() => setShowFilters(!showFilters)}
+                    >
+                        Filter
+                    </Button>
                 </div>
             </div>
+
+            {/* Filters */}
+            {showFilters && (
+                <div className="flex flex-col sm:flex-row gap-3 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex-1 max-w-md">
+                        <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Search</label>
+                        <SearchInput
+                            placeholder="Search alerts..."
+                            onSearch={setSearchTerm}
+                        />
+                    </div>
+                    <div className="flex gap-3">
+                        <div className="min-w-[140px]">
+                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Status</label>
+                            <Select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                options={[
+                                    { value: 'all', label: 'All Status' },
+                                    { value: 'active', label: 'Active' },
+                                    { value: 'acknowledged', label: 'Acknowledged' },
+                                    { value: 'resolved', label: 'Resolved' },
+                                ]}
+                            />
+                        </div>
+                        <div className="min-w-[140px]">
+                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Type</label>
+                            <Select
+                                value={typeFilter}
+                                onChange={(e) => setTypeFilter(e.target.value)}
+                                options={[
+                                    { value: 'all', label: 'All Severities' },
+                                    { value: 'error', label: 'Error' },
+                                    { value: 'warning', label: 'Warning' },
+                                    { value: 'info', label: 'Info' },
+                                ]}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <Card>
                 <CardBody className="p-0">
                     <Table
-                        data={filteredAlerts}
+                        data={paginatedAlerts}
                         columns={columns}
                         keyExtractor={(item) => item.id}
                         emptyMessage="No alerts found matching your criteria."
                     />
                 </CardBody>
             </Card>
+
+            {filteredAlerts.length > ITEMS_PER_PAGE && (
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    totalItems={filteredAlerts.length}
+                    itemsPerPage={ITEMS_PER_PAGE}
+                />
+            )}
+
+            <ConfirmModal
+                isOpen={deleteConfirm.isOpen}
+                onClose={() => setDeleteConfirm({ isOpen: false, id: '' })}
+                onConfirm={() => { if (deleteConfirm.id) deleteAlert(deleteConfirm.id); }}
+                title="Delete Alert"
+                message="Are you sure you want to delete this alert?"
+                confirmText="Delete"
+                variant="danger"
+            />
         </div>
     );
 }

@@ -235,7 +235,7 @@ export function Dashboard() {
                 <CardBody>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <Link
-                            to="/sites"
+                            to="/devices"
                             className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
                         >
                             <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
@@ -250,7 +250,7 @@ export function Dashboard() {
                             <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
                                 <Ticket className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">New Ticket</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">View Tickets</span>
                         </Link>
                         <Link
                             to="/reports"
@@ -262,13 +262,13 @@ export function Dashboard() {
                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Run Report</span>
                         </Link>
                         <Link
-                            to="/users"
+                            to="/alerts"
                             className="flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:shadow-sm"
                         >
                             <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-full">
                                 <HeartCrack className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                             </div>
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Health Check</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">System Alerts</span>
                         </Link>
                     </div>
                 </CardBody>

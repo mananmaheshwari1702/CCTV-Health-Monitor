@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Bell, Shield, Database, Globe, Mail, Smartphone, Monitor, Moon, Sun } from 'lucide-react';
-import { Card, CardHeader, CardBody, CardFooter, Button, Input, Select } from '../components/ui';
+import { Card, CardHeader, CardBody, CardFooter, Button, Input, Select, useToast } from '../components/ui';
 import { useTheme } from '../hooks/useTheme';
 import { useData } from '../context/DataContext';
 
 export function Settings() {
     const { theme, setTheme, isDark } = useTheme();
     const { settings, updateSettings } = useData();
+    const toast = useToast();
 
     // Local state for form handling to avoid jitter, sync on mount
     const [formData, setFormData] = useState(settings);
@@ -35,7 +36,7 @@ export function Settings() {
 
     const handleSave = () => {
         updateSettings(formData);
-        alert('Settings saved successfully!');
+        toast.success('Settings saved successfully!');
     };
 
     return (
@@ -208,14 +209,14 @@ export function Settings() {
                             <div key={int.name} className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg">
                                 <div className="flex items-center justify-between mb-2">
                                     <h4 className="font-medium text-slate-900 dark:text-white">{int.name}</h4>
-                                    <span className={`w-2 h-2 rounded-full ${int.color === 'emerald' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                                    <span className={`w - 2 h - 2 rounded - full ${int.color === 'emerald' ? 'bg-emerald-500' : 'bg-slate-300'} `} />
                                 </div>
                                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">{int.status}</p>
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     fullWidth
-                                    onClick={() => alert(`Configure ${int.name} integration...`)}
+                                    onClick={() => toast.info(`Configure ${int.name} integration coming soon`)}
                                 >
                                     Configure
                                 </Button>

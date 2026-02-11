@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardBody, Button, Badge, TicketStatusBadge, PriorityBadge, Textarea } from '../components/ui';
+import { Card, CardBody, Button, Badge, TicketStatusBadge, PriorityBadge, Textarea, ConfirmModal } from '../components/ui';
 import { ArrowLeft, Clock, MapPin, HardDrive, User, Send, Trash2 } from 'lucide-react';
 import { PermissionGuard } from '../components/auth/PermissionGuard';
 import { useAuth } from '../hooks/useAuth';
@@ -17,6 +17,7 @@ export function TicketDetail() {
     const ticket = tickets.find(t => t.id === ticketId);
 
     const [newComment, setNewComment] = useState('');
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     if (!ticket) {
         return (
@@ -50,10 +51,12 @@ export function TicketDetail() {
     };
 
     const handleDeleteTicket = () => {
-        if (window.confirm('Are you sure you want to delete this ticket? This action cannot be undone.')) {
-            deleteTicket(ticket.id);
-            navigate('/tickets');
-        }
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDeleteTicket = () => {
+        deleteTicket(ticket.id);
+        navigate('/tickets');
     };
 
     return (
@@ -221,6 +224,16 @@ export function TicketDetail() {
                     </Card>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={confirmDeleteTicket}
+                title="Delete Ticket"
+                message="Are you sure you want to delete this ticket? This action cannot be undone."
+                confirmText="Delete"
+                variant="danger"
+            />
         </div>
     );
 }

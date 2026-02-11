@@ -20,6 +20,7 @@ interface TableProps<T> {
     onSort?: (column: string) => void;
     emptyMessage?: string;
     loading?: boolean;
+    expandable?: (item: T) => React.ReactNode;
 }
 
 export function Table<T>({
@@ -32,6 +33,7 @@ export function Table<T>({
     onSort,
     emptyMessage = 'No data available',
     loading = false,
+    expandable,
 }: TableProps<T>) {
     const alignClasses = {
         left: 'text-left',
@@ -118,28 +120,39 @@ export function Table<T>({
                                 </td>
                             </tr>
                         ) : (
-                            data.map((item) => (
-                                <tr
-                                    key={keyExtractor(item)}
-                                    className={`${onRowClick
-                                        ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors'
-                                        : ''
-                                        }`}
-                                    onClick={() => onRowClick?.(item)}
-                                >
-                                    {columns.map((column) => (
-                                        <td
-                                            key={String(column.key)}
-                                            className={`px-4 py-4 text-sm text-slate-700 dark:text-slate-300 ${alignClasses[column.align || 'left']
-                                                }`}
+                            data.map((item) => {
+                                const expandedContent = expandable?.(item);
+                                return (
+                                    <React.Fragment key={keyExtractor(item)}>
+                                        <tr
+                                            className={`${onRowClick
+                                                ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors'
+                                                : ''
+                                                } ${expandedContent ? 'bg-slate-50 dark:bg-slate-700/30' : ''}`}
+                                            onClick={() => onRowClick?.(item)}
                                         >
-                                            {column.render
-                                                ? column.render(item)
-                                                : String(getValue(item, column.key) ?? '')}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))
+                                            {columns.map((column) => (
+                                                <td
+                                                    key={String(column.key)}
+                                                    className={`px-4 py-4 text-sm text-slate-700 dark:text-slate-300 ${alignClasses[column.align || 'left']
+                                                        }`}
+                                                >
+                                                    {column.render
+                                                        ? column.render(item)
+                                                        : String(getValue(item, column.key) ?? '')}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                        {expandedContent && (
+                                            <tr>
+                                                <td colSpan={columns.length} className="p-0 border-b border-slate-100 dark:border-slate-700/50">
+                                                    {expandedContent}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useData } from '../../context/DataContext';
 import { AlertCircle, X, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -6,8 +7,18 @@ export function AlertBanner() {
     const { alerts } = useData();
     const navigate = useNavigate();
     const activeAlerts = alerts.filter(a => a.status === 'active' && (a.type === 'error' || a.type === 'warning'));
+    const [dismissed, setDismissed] = useState(false);
+    const [lastCount, setLastCount] = useState(activeAlerts.length);
 
-    if (activeAlerts.length === 0) return null;
+    // Re-show banner when new alerts arrive
+    useEffect(() => {
+        if (activeAlerts.length > lastCount) {
+            setDismissed(false);
+        }
+        setLastCount(activeAlerts.length);
+    }, [activeAlerts.length, lastCount]);
+
+    if (activeAlerts.length === 0 || dismissed) return null;
 
     const criticalCount = activeAlerts.filter(a => a.type === 'error').length;
     const warningCount = activeAlerts.filter(a => a.type === 'warning').length;
@@ -29,12 +40,21 @@ export function AlertBanner() {
                         </p>
                     </div>
                 </div>
-                <button
-                    onClick={() => navigate('/alerts')}
-                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-red-100 dark:border-red-900/50 rounded-lg text-sm font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shadow-sm"
-                >
-                    View Alerts <ChevronRight className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => navigate('/alerts')}
+                        className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-red-100 dark:border-red-900/50 rounded-lg text-sm font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shadow-sm"
+                    >
+                        View Alerts <ChevronRight className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => setDismissed(true)}
+                        className="p-2 rounded-lg text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-800/30 transition-colors"
+                        aria-label="Dismiss alert banner"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
         </div>
     );

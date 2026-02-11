@@ -1,110 +1,156 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    HardDrive,
     Search,
-    Camera,
-    Server,
-    Monitor,
-    Network,
+    Filter,
     Plus,
+    MoreVertical,
+    Server,
+    Camera,
+    Activity,
+    Wifi,
+    WifiOff,
+    AlertTriangle,
+    CheckCircle,
+    XCircle,
+    Clock,
+    Monitor,
+    HardDrive,
+    Edit,
     Trash2
 } from 'lucide-react';
 import {
     Card,
+    CardHeader,
     CardBody,
     Badge,
     StatusBadge,
     HealthBadge,
-    SearchInput,
+    Button,
+    Input,
     Select,
     Table,
+    SearchInput,
     Pagination,
-    Button,
-    Input
+    Modal,
+    ConfirmModal
 } from '../components/ui';
 import { useData } from '../context/DataContext';
 import type { Device } from '../types';
 import { PermissionGuard } from '../components/auth/PermissionGuard';
+import { formatDistanceToNow } from 'date-fns';
 
 const ITEMS_PER_PAGE = 10;
 
-const typeIcons: Record<Device['type'], React.ReactNode> = {
-    camera: <Camera className="w-4 h-4" />,
-    nvr: <Server className="w-4 h-4" />,
-    dvr: <Monitor className="w-4 h-4" />,
-    switch: <Network className="w-4 h-4" />,
+const typeIcons = {
+    camera: <Camera className="w-5 h-5 text-blue-500" />,
+    nvr: <Server className="w-5 h-5 text-purple-500" />,
+    dvr: <HardDrive className="w-5 h-5 text-slate-500" />,
+    switch: <Activity className="w-5 h-5 text-emerald-500" />,
 };
 
-function timeAgo(dateStr: string): string {
-    const now = new Date();
-    const past = new Date(dateStr);
-    const diffMs = now.getTime() - past.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays === 1) return 'Yesterday';
-    return `${diffDays}d ago`;
+function timeAgo(dateString: string) {
+    try {
+        return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+    } catch (e) {
+        return dateString;
+    }
 }
 
 export function Devices() {
     const navigate = useNavigate();
-    const { devices, sites, addDevice, deleteDevice } = useData();
+    const { devices, sites, addDevice, updateDevice, deleteDevice } = useData();
     const [searchQuery, setSearchQuery] = useState('');
-    const [siteFilter, setSiteFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [siteFilter, setSiteFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [sortColumn, setSortColumn] = useState<string>('name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showFilters, setShowFilters] = useState(false);
+    const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string }>({ isOpen: false, id: '' });
 
-    // New Device Form State
-    const [newDevice, setNewDevice] = useState({
+    // Form State
+    const [formData, setFormData] = useState({
         name: '',
         type: 'camera',
         siteId: sites[0]?.id || '',
         ipAddress: '',
-        model: ''
+        model: '',
+        siteName: ''
     });
 
-    const handleCreateDevice = (e: React.FormEvent) => {
-        e.preventDefault();
-        const selectedSite = sites.find(s => s.id === newDevice.siteId);
-
-        const device: Device = {
-            id: `dev-${Date.now()}`,
-            name: newDevice.name,
-            siteId: newDevice.siteId,
-            siteName: selectedSite?.name || 'Unknown',
-            type: newDevice.type as any,
-            status: 'online',
-            health: 'healthy',
-            recordingStatus: 'recording',
-            lastSeen: new Date().toISOString(),
-            ipAddress: newDevice.ipAddress,
-            model: newDevice.model,
-            firmware: '1.0.0'
-        };
-
-        addDevice(device);
-        setShowAddModal(false);
-        setNewDevice({
+    const resetForm = () => {
+        setFormData({
             name: '',
             type: 'camera',
             siteId: sites[0]?.id || '',
             ipAddress: '',
-            model: ''
+            model: '',
+            siteName: ''
         });
+        setSelectedDevice(null);
+    };
+
+    const handleOpenModal = (device?: Device) => {
+        if (device) {
+            setSelectedDevice(device);
+            setFormData({
+                name: device.name,
+                type: device.type,
+                siteId: device.siteId,
+                ipAddress: device.ipAddress,
+                model: device.model,
+                siteName: device.siteName
+            });
+        } else {
+            resetForm();
+        }
+        setShowAddModal(true);
+    };
+
+    const handleSaveDevice = (e: React.FormEvent) => {
+        e.preventDefault();
+        const selectedSite = sites.find(s => s.id === formData.siteId);
+        const siteName = selectedSite?.name || 'Unknown';
+
+        if (selectedDevice) {
+            updateDevice(selectedDevice.id, {
+                name: formData.name,
+                type: formData.type as any,
+                siteId: formData.siteId,
+                siteName: siteName,
+                ipAddress: formData.ipAddress,
+                model: formData.model
+            });
+        } else {
+            const device: Device = {
+                id: `dev-${Date.now()}`,
+                name: formData.name,
+                siteId: formData.siteId,
+                siteName: siteName,
+                type: formData.type as any,
+                status: 'online',
+                health: 'healthy',
+                recordingStatus: 'recording',
+                lastSeen: new Date().toISOString(),
+                ipAddress: formData.ipAddress,
+                model: formData.model,
+                firmware: '1.0.0'
+            };
+            addDevice(device);
+        }
+        setShowAddModal(false);
+        resetForm();
     };
 
     const handleDeleteDevice = (deviceId: string) => {
-        if (window.confirm('Are you sure you want to delete this device?')) {
-            deleteDevice(deviceId);
-        }
+        setDeleteConfirm({ isOpen: true, id: deviceId });
+    };
+
+    const confirmDeleteDevice = () => {
+        if (deleteConfirm.id) deleteDevice(deleteConfirm.id);
     };
 
     const filteredDevices = useMemo(() => {
@@ -234,18 +280,31 @@ export function Devices() {
             header: '',
             align: 'right' as const,
             render: (device: Device) => (
-                <PermissionGuard requiredRole={['admin']}>
-                    <button
-                        className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors group"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteDevice(device.id);
-                        }}
-                        title="Delete Device"
-                    >
-                        <Trash2 className="w-4 h-4 text-slate-400 group-hover:text-red-500 dark:text-slate-500 dark:group-hover:text-red-400" />
-                    </button>
-                </PermissionGuard>
+                <div className="flex justify-end gap-2">
+                    <PermissionGuard requiredRole={['admin', 'manager']}>
+                        <button
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenModal(device);
+                            }}
+                        >
+                            <Edit className="w-4 h-4" />
+                        </button>
+                    </PermissionGuard>
+                    <PermissionGuard requiredRole={['admin']}>
+                        <button
+                            className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors group"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteDevice(device.id);
+                            }}
+                            title="Delete Device"
+                        >
+                            <Trash2 className="w-4 h-4 text-slate-400 group-hover:text-red-500 dark:text-slate-500 dark:group-hover:text-red-400" />
+                        </button>
+                    </PermissionGuard>
+                </div>
             ),
         },
     ];
@@ -260,11 +319,20 @@ export function Devices() {
                         Monitor and manage all connected devices across your sites.
                     </p>
                 </div>
-                <PermissionGuard requiredRole={['admin', 'manager']}>
-                    <Button icon={<Plus className="w-4 h-4" />} onClick={() => setShowAddModal(true)}>
-                        Add Device
+                <div className="flex gap-3">
+                    <Button
+                        variant={showFilters ? 'primary' : 'outline'}
+                        icon={<Filter className="w-4 h-4" />}
+                        onClick={() => setShowFilters(!showFilters)}
+                    >
+                        Filter
                     </Button>
-                </PermissionGuard>
+                    <PermissionGuard requiredRole={['admin', 'manager']}>
+                        <Button icon={<Plus className="w-4 h-4" />} onClick={() => handleOpenModal()}>
+                            Add Device
+                        </Button>
+                    </PermissionGuard>
+                </div>
             </div>
 
             {/* Status Summary Cards */}
@@ -330,140 +398,180 @@ export function Devices() {
             </div>
 
             {/* Filters Bar */}
-            <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1 max-w-md">
-                    <SearchInput
-                        placeholder="Search devices, IPs, sites..."
-                        onSearch={(q) => {
-                            setSearchQuery(q);
-                            setCurrentPage(1);
-                        }}
-                    />
+            {showFilters && (
+                <div className="flex flex-col sm:flex-row gap-3 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex-1 max-w-md">
+                        <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Search</label>
+                        <SearchInput
+                            placeholder="Search devices, IPs, sites..."
+                            onSearch={(q) => {
+                                setSearchQuery(q);
+                                setCurrentPage(1);
+                            }}
+                        />
+                    </div>
+                    <div className="flex gap-3">
+                        <div className="min-w-[140px]">
+                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Site</label>
+                            <Select
+                                value={siteFilter}
+                                onChange={(e) => {
+                                    setSiteFilter(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                options={[
+                                    { value: 'all', label: 'All Sites' },
+                                    ...sites.map((site) => ({
+                                        value: site.id,
+                                        label: site.name,
+                                    })),
+                                ]}
+                            />
+                        </div>
+                        <div className="min-w-[140px]">
+                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Status</label>
+                            <Select
+                                value={statusFilter}
+                                onChange={(e) => {
+                                    setStatusFilter(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                options={[
+                                    { value: 'all', label: 'All Status' },
+                                    { value: 'online', label: 'Online' },
+                                    { value: 'offline', label: 'Offline' },
+                                    { value: 'warning', label: 'Warning' },
+                                ]}
+                            />
+                        </div>
+                    </div>
                 </div>
-                <div className="flex gap-3">
-                    <Select
-                        value={siteFilter}
-                        onChange={(e) => {
-                            setSiteFilter(e.target.value);
-                            setCurrentPage(1);
-                        }}
-                        options={[
-                            { value: 'all', label: 'All Sites' },
-                            ...sites.map((site) => ({
-                                value: site.id,
-                                label: site.name,
-                            })),
-                        ]}
-                    />
-                    <Select
-                        value={statusFilter}
-                        onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            setCurrentPage(1);
-                        }}
-                        options={[
-                            { value: 'all', label: 'All Status' },
-                            { value: 'online', label: 'Online' },
-                            { value: 'offline', label: 'Offline' },
-                            { value: 'warning', label: 'Warning' },
-                        ]}
-                    />
-                </div>
-            </div>
+            )}
 
             {/* Device Table */}
-            <Table<Device>
+            <Table
                 data={paginatedDevices}
                 columns={columns}
-                keyExtractor={(d) => d.id}
-                onRowClick={(d) => navigate(`/devices/${d.id}`)}
+                keyExtractor={(device) => device.id}
+                onRowClick={(device) => navigate(`/devices/${device.id}`)}
                 sortColumn={sortColumn}
                 sortDirection={sortDirection}
                 onSort={handleSort}
-                emptyMessage="No devices match your filters"
+                emptyMessage="No devices found matching your criteria"
             />
 
             {/* Pagination */}
             {totalPages > 1 && (
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    totalItems={filteredDevices.length}
-                    itemsPerPage={ITEMS_PER_PAGE}
-                />
-            )}
-
-            {/* Add Device Modal */}
-            {showAddModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6">
-                        <h2 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Add New Device</h2>
-                        <form onSubmit={handleCreateDevice} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1 dark:text-slate-200">Device Name</label>
-                                <Input
-                                    value={newDevice.name}
-                                    onChange={e => setNewDevice({ ...newDevice, name: e.target.value })}
-                                    placeholder="e.g. Lobby Camera"
-                                    required
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 dark:text-slate-200">Type</label>
-                                    <Select
-                                        value={newDevice.type}
-                                        onChange={e => setNewDevice({ ...newDevice, type: e.target.value })}
-                                        options={[
-                                            { value: 'camera', label: 'Camera' },
-                                            { value: 'nvr', label: 'NVR' },
-                                            { value: 'dvr', label: 'DVR' },
-                                            { value: 'switch', label: 'Switch' }
-                                        ]}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 dark:text-slate-200">Site</label>
-                                    <Select
-                                        value={newDevice.siteId}
-                                        onChange={e => setNewDevice({ ...newDevice, siteId: e.target.value })}
-                                        options={sites.map(s => ({ value: s.id, label: s.name }))}
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 dark:text-slate-200">IP Address</label>
-                                    <Input
-                                        value={newDevice.ipAddress}
-                                        onChange={e => setNewDevice({ ...newDevice, ipAddress: e.target.value })}
-                                        placeholder="192.168.1.10"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 dark:text-slate-200">Model</label>
-                                    <Input
-                                        value={newDevice.model}
-                                        onChange={e => setNewDevice({ ...newDevice, model: e.target.value })}
-                                        placeholder="Specific Model"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex justify-end gap-3 mt-6">
-                                <Button variant="outline" onClick={() => setShowAddModal(false)} type="button">
-                                    Cancel
-                                </Button>
-                                <Button variant="primary" type="submit">
-                                    Add Device
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
+                <div className="mt-4 flex justify-center">
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        totalItems={filteredDevices.length}
+                        itemsPerPage={ITEMS_PER_PAGE}
+                    />
                 </div>
             )}
+
+
+            {/* Add/Edit Modal */}
+            <Modal
+                isOpen={showAddModal}
+                onClose={() => {
+                    setShowAddModal(false);
+                    setSelectedDevice(null);
+                }}
+                title={selectedDevice ? 'Edit Device' : 'Add New Device'}
+            >
+                <form onSubmit={handleSaveDevice} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Device Name
+                        </label>
+                        <Input
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            placeholder="e.g., Main Entrance Camera"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Type
+                        </label>
+                        <Select
+                            value={formData.type}
+                            onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                            options={[
+                                { value: 'camera', label: 'Camera' },
+                                { value: 'nvr', label: 'NVR' },
+                                { value: 'server', label: 'Server' },
+                            ]}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Site
+                        </label>
+                        <Select
+                            value={formData.siteId}
+                            onChange={(e) => {
+                                const site = sites.find(s => s.id === e.target.value);
+                                setFormData({
+                                    ...formData,
+                                    siteId: e.target.value,
+                                    siteName: site?.name || ''
+                                });
+                            }}
+                            options={sites.map(site => ({
+                                value: site.id,
+                                label: site.name
+                            }))}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            IP Address
+                        </label>
+                        <Input
+                            value={formData.ipAddress}
+                            onChange={(e) => setFormData({ ...formData, ipAddress: e.target.value })}
+                            placeholder="e.g., 192.168.1.100"
+                            required
+                        />
+                    </div>
+
+                    <div className="flex justify-end gap-3 mt-6">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                setShowAddModal(false);
+                                setSelectedDevice(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button type="submit" variant="primary">
+                            {selectedDevice ? 'Save Changes' : 'Add Device'}
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Delete Confirmation */}
+            <ConfirmModal
+                isOpen={deleteConfirm.isOpen}
+                onClose={() => setDeleteConfirm({ isOpen: false, id: '' })}
+                onConfirm={confirmDeleteDevice}
+                title="Delete Device"
+                message="Are you sure you want to delete this device? This action cannot be undone."
+                confirmText="Delete"
+                variant="danger"
+            />
         </div>
     );
 }

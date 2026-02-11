@@ -55,14 +55,18 @@ export function Badge({
 }
 
 // Status badge presets
-export function StatusBadge({ status }: { status: 'online' | 'offline' | 'warning' }) {
+// Status badge presets
+export function StatusBadge({ status }: { status: 'online' | 'offline' | 'warning' | 'active' | 'inactive' | 'maintenance' }) {
     const config = {
         online: { variant: 'success' as BadgeVariant, label: 'Online' },
         offline: { variant: 'danger' as BadgeVariant, label: 'Offline' },
         warning: { variant: 'warning' as BadgeVariant, label: 'Warning' },
+        active: { variant: 'success' as BadgeVariant, label: 'Active' },
+        inactive: { variant: 'neutral' as BadgeVariant, label: 'Inactive' },
+        maintenance: { variant: 'warning' as BadgeVariant, label: 'Maintenance' },
     };
 
-    const { variant, label } = config[status];
+    const { variant, label } = config[status] || { variant: 'neutral', label: status };
     return <Badge variant={variant} dot>{label}</Badge>;
 }
 
