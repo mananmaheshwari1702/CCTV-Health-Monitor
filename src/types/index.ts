@@ -120,6 +120,8 @@ export interface DashboardStats {
     recordingMissing: number;
     openTickets: number;
     criticalTickets: number;
+    resolutionRate: number;
+    avgResponseTime: number;
 }
 
 // Alert Types
@@ -165,4 +167,16 @@ export interface AppSettings {
         maxRecordingGap: number;
         alertThreshold: number;
     };
+    security: {
+        requires2FA: boolean;
+        passwordPolicy: 'basic' | 'strong';
+    };
+}
+
+export interface DashboardLayoutConfig {
+    showStatsRow: boolean;
+    showTicketStats: boolean;
+    showRecentAlerts: boolean;
+    showLatestTickets: boolean;
+    showQuickActions: boolean;
 }

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Building2,
     MapPin,
@@ -34,6 +35,7 @@ import type { Site, Device } from '../types';
 import { PermissionGuard } from '../components/auth/PermissionGuard';
 
 export function Sites() {
+    const navigate = useNavigate();
     const { sites, devices, addSite, updateSite, deleteSite } = useData();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -308,7 +310,7 @@ export function Sites() {
                         <div className="mt-4 flex justify-end">
                             <Button size="sm" variant="outline" onClick={(e) => {
                                 e.stopPropagation();
-                                // Navigate to devices filtered by this site
+                                navigate(`/devices?site=${site.id}`);
                             }}>
                                 View All Devices
                             </Button>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Search,
     Filter,
@@ -61,8 +61,9 @@ export function Devices() {
     const navigate = useNavigate();
     const { devices, sites, addDevice, updateDevice, deleteDevice } = useData();
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchParams] = useSearchParams();
     const [statusFilter, setStatusFilter] = useState('all');
-    const [siteFilter, setSiteFilter] = useState('all');
+    const [siteFilter, setSiteFilter] = useState(searchParams.get('site') || 'all');
     const [currentPage, setCurrentPage] = useState(1);
     const [sortColumn, setSortColumn] = useState<string>('name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');

@@ -29,7 +29,7 @@ const ITEMS_PER_PAGE = 10;
 export function Tickets() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { tickets, devices, addTicket, deleteTicket } = useData();
+    const { tickets, devices, sites, addTicket, deleteTicket } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [priorityFilter, setPriorityFilter] = useState<string>('all');
@@ -49,8 +49,16 @@ export function Tickets() {
         title: '',
         description: '',
         priority: 'medium',
-        deviceId: ''
+        deviceId: '',
+        siteId: ''
     });
+
+    // Set default site when modal opens or sites load
+    React.useEffect(() => {
+        if (showCreateModal && !newTicket.siteId && sites.length > 0) {
+            setNewTicket(prev => ({ ...prev, siteId: sites[0].id }));
+        }
+    }, [showCreateModal, sites]);
 
     const handleCreateTicket = (e: React.FormEvent) => {
         e.preventDefault();
@@ -59,7 +67,7 @@ export function Tickets() {
         if (!selectedDevice) return;
 
         const ticket: TicketType = {
-            id: `TKT-${Math.floor(Math.random() * 10000)}`,
+            id: `TKT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
             title: newTicket.title,
             description: newTicket.description,
             priority: newTicket.priority as any,
@@ -75,7 +83,13 @@ export function Tickets() {
 
         addTicket(ticket);
         setShowCreateModal(false);
-        setNewTicket({ title: '', description: '', priority: 'medium', deviceId: '' });
+        setNewTicket({
+            title: '',
+            description: '',
+            priority: 'medium',
+            deviceId: '',
+            siteId: sites.length > 0 ? sites[0].id : ''
+        });
     };
 
     const handleDeleteTicket = (ticketId: string) => {
@@ -349,29 +363,43 @@ export function Tickets() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
+                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Site</label>
+                            <Select
+                                value={newTicket.siteId}
+                                onChange={e => setNewTicket({ ...newTicket, siteId: e.target.value, deviceId: '' })}
+                                options={[
+                                    { value: '', label: 'Select Site' },
+                                    ...sites.map(s => ({ value: s.id, label: s.name }))
+                                ]}
+                            />
+                        </div>
+                        <div>
                             <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Device</label>
                             <Select
                                 value={newTicket.deviceId}
                                 onChange={e => setNewTicket({ ...newTicket, deviceId: e.target.value })}
                                 options={[
                                     { value: '', label: 'Select Device' },
-                                    ...devices.map(d => ({ value: d.id, label: `${d.name} (${d.siteName})` }))
+                                    ...devices
+                                        .filter(d => !newTicket.siteId || d.siteId === newTicket.siteId)
+                                        .map(d => ({ value: d.id, label: `${d.name}` }))
                                 ]}
+                                disabled={!newTicket.siteId}
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Priority</label>
-                            <Select
-                                value={newTicket.priority}
-                                onChange={e => setNewTicket({ ...newTicket, priority: e.target.value })}
-                                options={[
-                                    { value: 'low', label: 'Low' },
-                                    { value: 'medium', label: 'Medium' },
-                                    { value: 'high', label: 'High' },
-                                    { value: 'critical', label: 'Critical' },
-                                ]}
-                            />
-                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Priority</label>
+                        <Select
+                            value={newTicket.priority}
+                            onChange={e => setNewTicket({ ...newTicket, priority: e.target.value })}
+                            options={[
+                                { value: 'low', label: 'Low' },
+                                { value: 'medium', label: 'Medium' },
+                                { value: 'high', label: 'High' },
+                                { value: 'critical', label: 'Critical' },
+                            ]}
+                        />
                     </div>
                 </form>
             </Modal>

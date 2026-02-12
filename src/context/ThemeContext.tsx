@@ -22,6 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [isDark, setIsDark] = useState(false);
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
         const root = window.document.documentElement;
 
         const updateTheme = () => {
@@ -59,10 +60,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     );
 }
 
-export function useThemeContext() {
+export function useTheme() {
     const context = useContext(ThemeContext);
     if (context === undefined) {
-        throw new Error('useThemeContext must be used within a ThemeProvider');
+        throw new Error('useTheme must be used within a ThemeProvider');
     }
     return context;
 }

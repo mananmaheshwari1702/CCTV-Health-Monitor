@@ -1,13 +1,14 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
 import {
     tickets as initialTickets,
     alerts as initialAlerts,
     users as initialUsers,
     devices as initialDevices,
     sites as initialSites,
-    dashboardStats as initialStats
+    // dashboardStats as initialStats // Removed as we calculate dynamically
 } from '../data/mockData';
-import type { Ticket, Alert, User, Device, Site, DashboardStats, TicketComment, AlertStatus, TicketStatus, AppSettings } from '../types';
+import type { Ticket, Alert, User, Device, Site, DashboardStats, TicketComment, AlertStatus, TicketStatus, AppSettings, DashboardLayoutConfig } from '../types';
+import { useAuth } from '../hooks/useAuth';
 
 interface DataContextType {
     tickets: Ticket[];
@@ -42,16 +43,22 @@ interface DataContextType {
     deleteSite: (id: string) => void;
 
     updateSettings: (updates: Partial<AppSettings>) => void;
+
+    dashboardConfig: DashboardLayoutConfig;
+    updateDashboardConfig: (updates: Partial<DashboardLayoutConfig>) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-    const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
-    const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
+    const { user } = useAuth();
+
+    // Raw State (The Source of Truth)
+    const [rawTickets, setRawTickets] = useState<Ticket[]>(initialTickets);
+    const [rawAlerts, setRawAlerts] = useState<Alert[]>(initialAlerts);
     const [users, setUsers] = useState<User[]>(initialUsers);
-    const [devices, setDevices] = useState<Device[]>(initialDevices);
-    const [sites, setSites] = useState<Site[]>(initialSites);
+    const [rawDevices, setRawDevices] = useState<Device[]>(initialDevices);
+    const [rawSites, setRawSites] = useState<Site[]>(initialSites);
 
     const [settings, setSettings] = useState<AppSettings>({
         organizationName: 'ACME Corporation',
@@ -70,11 +77,61 @@ export function DataProvider({ children }: { children: ReactNode }) {
             sessionTimeout: 30,
             maxRecordingGap: 15,
             alertThreshold: 85,
+        },
+        security: {
+            requires2FA: false,
+            passwordPolicy: 'basic',
         }
     });
 
-    // Calculate dynamic stats based on current state
-    const dashboardStats: DashboardStats = {
+    const [dashboardConfig, setDashboardConfig] = useState<DashboardLayoutConfig>(() => {
+        const saved = localStorage.getItem('dashboardConfig');
+        return saved ? JSON.parse(saved) : {
+            showStatsRow: true,
+            showTicketStats: true,
+            showRecentAlerts: true,
+            showLatestTickets: true,
+            showQuickActions: true
+        };
+    });
+
+    // --- Access Control Logic ---
+    // Calculate visible data based on user role and assigned sites
+
+    // 1. Visible Sites
+    const sites = useMemo(() => {
+        if (!user) return [];
+        if (user.role === 'admin') return rawSites;
+        return rawSites.filter(site => user.sites.includes(site.id));
+    }, [user, rawSites]);
+
+    // 2. Visible Devices (only those in visible sites)
+    const devices = useMemo(() => {
+        if (!user) return [];
+        if (user.role === 'admin') return rawDevices;
+        const visibleSiteIds = sites.map(s => s.id);
+        return rawDevices.filter(device => visibleSiteIds.includes(device.siteId));
+    }, [user, rawDevices, sites]);
+
+    // 3. Visible Tickets (linked to visible devices)
+    const tickets = useMemo(() => {
+        if (!user) return [];
+        if (user.role === 'admin') return rawTickets;
+        const visibleDeviceIds = devices.map(d => d.id);
+        return rawTickets.filter(ticket => visibleDeviceIds.includes(ticket.deviceId));
+    }, [user, rawTickets, devices]);
+
+    // 4. Visible Alerts (linked to visible devices)
+    const alerts = useMemo(() => {
+        if (!user) return [];
+        if (user.role === 'admin') return rawAlerts;
+        const visibleDeviceIds = devices.map(d => d.id);
+        return rawAlerts.filter(alert => visibleDeviceIds.includes(alert.deviceId));
+    }, [user, rawAlerts, devices]);
+
+
+    // Calculate dynamic stats based on *Filtered* visible data
+    const dashboardStats = useMemo<DashboardStats>(() => ({
         totalDevices: devices.length,
         onlineDevices: devices.filter(d => d.status === 'online').length,
         offlineDevices: devices.filter(d => d.status === 'offline').length,
@@ -83,23 +140,44 @@ export function DataProvider({ children }: { children: ReactNode }) {
         recordingMissing: devices.filter(d => d.recordingStatus === 'not_recording' || d.status === 'warning').length,
         openTickets: tickets.filter(t => t.status === 'open' || t.status === 'in_progress').length,
         criticalTickets: tickets.filter(t => t.priority === 'critical' && t.status !== 'closed').length,
-    };
+        resolutionRate: (() => {
+            if (tickets.length === 0) return 0;
+            const resolvedCount = tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length;
+            return Math.round((resolvedCount / tickets.length) * 100);
+        })(),
+        avgResponseTime: (() => {
+            const respondedTickets = tickets.filter(t => t.comments && t.comments.length > 0);
+            if (respondedTickets.length === 0) return 0;
+
+            const totalResponseTime = respondedTickets.reduce((acc, ticket) => {
+                const firstResponse = ticket.comments![0].createdAt;
+                const created = ticket.createdAt;
+                return acc + (new Date(firstResponse).getTime() - new Date(created).getTime());
+            }, 0);
+
+            const avgMs = totalResponseTime / respondedTickets.length;
+            return Number((avgMs / (1000 * 60 * 60)).toFixed(1));
+        })(),
+    }), [devices, tickets]);
+
+    // Helper to add IDs to updates for consistency with original pattern if strictly needed,
+    // but here we just update state arrays.
 
     // Ticket Actions
     const addTicket = (ticket: Ticket) => {
-        setTickets(prev => [ticket, ...prev]);
+        setRawTickets(prev => [ticket, ...prev]);
     };
 
     const updateTicket = (id: string, updates: Partial<Ticket>) => {
-        setTickets(prev => prev.map(t => t.id === id ? { ...t, ...updates, updatedAt: new Date().toISOString() } : t));
+        setRawTickets(prev => prev.map(t => t.id === id ? { ...t, ...updates, updatedAt: new Date().toISOString() } : t));
     };
 
     const deleteTicket = (id: string) => {
-        setTickets(prev => prev.filter(t => t.id !== id));
+        setRawTickets(prev => prev.filter(t => t.id !== id));
     };
 
     const addTicketComment = (ticketId: string, comment: TicketComment) => {
-        setTickets(prev => prev.map(t => {
+        setRawTickets(prev => prev.map(t => {
             if (t.id === ticketId) {
                 return {
                     ...t,
@@ -113,15 +191,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     // Alert Actions
     const addAlert = (alert: Alert) => {
-        setAlerts(prev => [alert, ...prev]);
+        setRawAlerts(prev => [alert, ...prev]);
     };
 
     const updateAlertStatus = (id: string, status: AlertStatus) => {
-        setAlerts(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+        setRawAlerts(prev => prev.map(a => a.id === id ? { ...a, status } : a));
     };
 
     const deleteAlert = (id: string) => {
-        setAlerts(prev => prev.filter(a => a.id !== id));
+        setRawAlerts(prev => prev.filter(a => a.id !== id));
     };
 
     // User Actions
@@ -139,33 +217,52 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     // Device Actions
     const updateDevice = (id: string, updates: Partial<Device>) => {
-        setDevices(prev => prev.map(d => d.id === id ? { ...d, ...updates } : d));
+        setRawDevices(prev => prev.map(d => d.id === id ? { ...d, ...updates } : d));
     };
 
     const addDevice = (device: Device) => {
-        setDevices(prev => [...prev, device]);
+        setRawDevices(prev => [...prev, device]);
     };
 
     const deleteDevice = (id: string) => {
-        setDevices(prev => prev.filter(d => d.id !== id));
+        setRawDevices(prev => prev.filter(d => d.id !== id));
     };
 
     // Site Actions
     const addSite = (site: Site) => {
-        setSites(prev => [...prev, site]);
+        setRawSites(prev => [...prev, site]);
     };
 
     const updateSite = (id: string, updates: Partial<Site>) => {
-        setSites(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+        setRawSites(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
     };
 
     const deleteSite = (id: string) => {
-        setSites(prev => prev.filter(s => s.id !== id));
+        setRawSites(prev => prev.filter(s => s.id !== id));
     };
 
     // Settings Actions
     const updateSettings = (updates: Partial<AppSettings>) => {
-        setSettings(prev => ({ ...prev, ...updates }));
+        setSettings(prev => ({
+            ...prev,
+            ...updates,
+            notifications: {
+                ...prev.notifications,
+                ...(updates.notifications || {})
+            },
+            system: {
+                ...prev.system,
+                ...(updates.system || {})
+            }
+        }));
+    };
+
+    const updateDashboardConfig = (updates: Partial<DashboardLayoutConfig>) => {
+        setDashboardConfig(prev => {
+            const next = { ...prev, ...updates };
+            localStorage.setItem('dashboardConfig', JSON.stringify(next));
+            return next;
+        });
     };
 
     return (
@@ -177,6 +274,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
             sites,
             dashboardStats,
             settings,
+            dashboardConfig,
             addTicket,
             updateTicket,
             deleteTicket,
@@ -193,7 +291,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
             addSite,
             updateSite,
             deleteSite,
-            updateSettings
+            updateSettings,
+            updateDashboardConfig
         }}>
             {children}
         </DataContext.Provider>

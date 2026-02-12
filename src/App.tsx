@@ -21,6 +21,8 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   return children;
 }
 
+import { RoleProtectedRoute } from './components/auth/RoleProtectedRoute';
+
 function App() {
   return (
     <ThemeProvider>
@@ -46,9 +48,19 @@ function App() {
                   <Route path="/tickets" element={<Tickets />} />
                   <Route path="/tickets/:ticketId" element={<TicketDetail />} />
                   <Route path="/alerts" element={<Alerts />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/users" element={<Users />} />
-                  <Route path="/settings" element={<Settings />} />
+                  <Route element={<RoleProtectedRoute allowedRoles={['admin', 'manager', 'technician']} />}>
+                    <Route path="/reports" element={<Reports />} />
+                  </Route>
+
+                  {/* Admin Only Routes */}
+                  <Route element={<RoleProtectedRoute allowedRoles={['admin']} />}>
+                    <Route path="/users" element={<Users />} />
+                  </Route>
+
+                  {/* Admin & Manager Routes */}
+                  <Route element={<RoleProtectedRoute allowedRoles={['admin', 'manager']} />}>
+                    <Route path="/settings" element={<Settings />} />
+                  </Route>
                 </Route>
 
                 {/* Default Redirect */}

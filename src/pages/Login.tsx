@@ -1,35 +1,91 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { Camera, Eye, EyeOff, Lock, Mail, Shield } from 'lucide-react';
 import { Button } from '../components/ui';
 import { useAuth } from '../hooks/useAuth';
+import { useData } from '../context/DataContext';
 
 export function Login() {
     const navigate = useNavigate();
     const { login } = useAuth();
+    const { settings } = useData(); // Access settings for security config
+
+    // Login State
+    const [step, setStep] = useState<'credentials' | '2fa'>('credentials');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [otp, setOtp] = useState('');
+
+    // UI State
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const validatePassword = (pwd: string) => {
+        if (settings.security.passwordPolicy === 'strong') {
+            // Min 8 chars, 1 number or symbol
+            const strongRegex = /^(?=.*[0-9!@#$%^&*])(?=.{8,})/;
+            return strongRegex.test(pwd);
+        }
+        // Basic: Min 6 chars
+        return pwd.length >= 6;
+    };
+
+    const handleCredentialsSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
-        // Mock authentication
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Simulate network delay
+        await new Promise((resolve) => setTimeout(resolve, 800));
 
-        if (email && password) {
-            // Default to admin role for the demo
-            login('admin');
-            navigate('/dashboard');
-        } else {
+        // Basic Validation
+        if (!email || !password) {
             setError('Please enter your email and password');
             setLoading(false);
+            return;
         }
+
+        // Password Policy Validation
+        if (!validatePassword(password)) {
+            const msg = settings.security.passwordPolicy === 'strong'
+                ? 'Password must be at least 8 characters and contain a number or symbol.'
+                : 'Password must be at least 6 characters.';
+            setError(msg);
+            setLoading(false);
+            return;
+        }
+
+        // Check if 2FA is required
+        if (settings.security.requires2FA) {
+            setLoading(false);
+            setStep('2fa');
+            return;
+        }
+
+        // Complete Login
+        completeLogin();
+    };
+
+    const handleOtpSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        if (otp === '123456') { // Mock OTP
+            completeLogin();
+        } else {
+            setError('Invalid authentication code. Try "123456"');
+            setLoading(false);
+        }
+    };
+
+    const completeLogin = () => {
+        login('admin'); // Default role for demo
+        navigate('/dashboard');
     };
 
     return (
@@ -52,23 +108,27 @@ export function Login() {
                         <span className="text-blue-400">Health Monitoring</span>
                     </h2>
                     <p className="text-lg text-slate-300 max-w-md">
-                        Monitor device health, manage tickets, and ensure your surveillance
-                        infrastructure runs smoothly 24/7.
+                        {step === '2fa'
+                            ? "Secure your account with Two-Factor Authentication."
+                            : "Monitor device health, manage tickets, and ensure your surveillance infrastructure runs smoothly 24/7."}
                     </p>
-                    <div className="flex gap-8">
-                        <div>
-                            <p className="text-3xl font-bold text-white">248+</p>
-                            <p className="text-sm text-slate-400">Devices Monitored</p>
+
+                    {step === 'credentials' && (
+                        <div className="flex gap-8">
+                            <div>
+                                <p className="text-3xl font-bold text-white">248+</p>
+                                <p className="text-sm text-slate-400">Devices Monitored</p>
+                            </div>
+                            <div>
+                                <p className="text-3xl font-bold text-white">99.5%</p>
+                                <p className="text-sm text-slate-400">Uptime</p>
+                            </div>
+                            <div>
+                                <p className="text-3xl font-bold text-white">5</p>
+                                <p className="text-sm text-slate-400">Sites</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-3xl font-bold text-white">99.5%</p>
-                            <p className="text-sm text-slate-400">Uptime</p>
-                        </div>
-                        <div>
-                            <p className="text-3xl font-bold text-white">5</p>
-                            <p className="text-sm text-slate-400">Sites</p>
-                        </div>
-                    </div>
+                    )}
                 </div>
 
                 <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -92,8 +152,14 @@ export function Login() {
 
                     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 border border-slate-200 dark:border-slate-700/50">
                         <div className="text-center mb-8">
-                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h2>
-                            <p className="text-slate-500 dark:text-slate-400 mt-2">Sign in to your account</p>
+                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                                {step === '2fa' ? 'Two-Factor Authentication' : 'Welcome back'}
+                            </h2>
+                            <p className="text-slate-500 dark:text-slate-400 mt-2">
+                                {step === '2fa'
+                                    ? 'Enter the 6-digit code from your authenticator app'
+                                    : 'Sign in to your account'}
+                            </p>
                         </div>
 
                         {error && (
@@ -102,74 +168,123 @@ export function Login() {
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} className="space-y-5">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                                    Email address
-                                </label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="admin@company.com"
-                                        className="w-full pl-12 pr-4 py-3 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400"
-                                    />
+                        {step === 'credentials' ? (
+                            <form onSubmit={handleCredentialsSubmit} className="space-y-5">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                                        Email address
+                                    </label>
+                                    <div className="relative">
+                                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                        <input
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="admin@company.com"
+                                            className="w-full pl-12 pr-4 py-3 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                                    Password
-                                </label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="••••••••"
-                                        className="w-full pl-12 pr-12 py-3 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                                    >
-                                        {showPassword ? (
-                                            <EyeOff className="w-5 h-5" />
-                                        ) : (
-                                            <Eye className="w-5 h-5" />
-                                        )}
-                                    </button>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                                        Password
+                                    </label>
+                                    <div className="relative">
+                                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                        <input
+                                            type={showPassword ? 'text' : 'password'}
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="••••••••"
+                                            className="w-full pl-12 pr-12 py-3 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="w-5 h-5" />
+                                            ) : (
+                                                <Eye className="w-5 h-5" />
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="flex items-center justify-between">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={rememberMe}
-                                        onChange={(e) => setRememberMe(e.target.checked)}
-                                        className="w-4 h-4 text-blue-600 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500 dark:bg-slate-900/50"
-                                    />
-                                    <span className="text-sm text-slate-600 dark:text-slate-300">Remember me</span>
-                                </label>
-                                <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
-                                    Forgot password?
-                                </a>
-                            </div>
+                                <div className="flex items-center justify-between">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={rememberMe}
+                                            onChange={(e) => setRememberMe(e.target.checked)}
+                                            className="w-4 h-4 text-blue-600 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500 dark:bg-slate-900/50"
+                                        />
+                                        <span className="text-sm text-slate-600 dark:text-slate-300">Remember me</span>
+                                    </label>
+                                    <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
+                                        Forgot password?
+                                    </a>
+                                </div>
 
-                            <Button
-                                type="submit"
-                                fullWidth
-                                size="lg"
-                                loading={loading}
-                            >
-                                Sign in
-                            </Button>
-                        </form>
+                                <Button
+                                    type="submit"
+                                    fullWidth
+                                    size="lg"
+                                    loading={loading}
+                                >
+                                    Sign in
+                                </Button>
+                            </form>
+                        ) : (
+                            <form onSubmit={handleOtpSubmit} className="space-y-5">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                                        Authentication Code
+                                    </label>
+                                    <div className="relative">
+                                        <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                        <input
+                                            type="text"
+                                            value={otp}
+                                            onChange={(e) => {
+                                                if (e.target.value.length <= 6 && /^\d*$/.test(e.target.value)) {
+                                                    setOtp(e.target.value);
+                                                }
+                                            }}
+                                            placeholder="000000"
+                                            className="w-full pl-12 pr-4 py-3 text-lg tracking-widest border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 text-center font-mono"
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <p className="text-xs text-center text-slate-500 mt-2">
+                                        Enter code: 123456
+                                    </p>
+                                </div>
+
+                                <Button
+                                    type="submit"
+                                    fullWidth
+                                    size="lg"
+                                    loading={loading}
+                                >
+                                    Verify Code
+                                </Button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setStep('credentials');
+                                        setOtp('');
+                                        setError('');
+                                    }}
+                                    className="w-full text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                                >
+                                    Back to Login
+                                </button>
+                            </form>
+                        )}
 
                         <div className="mt-6 text-center">
                             <p className="text-sm text-slate-500 dark:text-slate-400">

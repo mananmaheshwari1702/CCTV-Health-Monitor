@@ -180,6 +180,45 @@ export function Pagination({
     const startItem = (currentPage - 1) * itemsPerPage + 1;
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
+    const getPageNumbers = () => {
+        const pages: (number | string)[] = [];
+        const siblingCount = 1; // Number of pages to show on each side of current page
+
+        // If total pages is small enough, show all
+        if (totalPages <= 7) {
+            return Array.from({ length: totalPages }, (_, i) => i + 1);
+        }
+
+        // Always show first page
+        pages.push(1);
+
+        // Determine start and end of sibling window
+        const startPage = Math.max(2, currentPage - siblingCount);
+        const endPage = Math.min(totalPages - 1, currentPage + siblingCount);
+
+        // Add ellipses or pages before the window
+        if (startPage > 2) {
+            pages.push('...');
+        }
+
+        // Add pages in the window
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(i);
+        }
+
+        // Add ellipses or pages after the window
+        if (endPage < totalPages - 1) {
+            pages.push('...');
+        }
+
+        // Always show last page
+        if (totalPages > 1) {
+            pages.push(totalPages);
+        }
+
+        return pages;
+    };
+
     return (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
             <div className="text-sm text-slate-500 dark:text-slate-400 text-center sm:text-left">
@@ -195,18 +234,21 @@ export function Pagination({
                 >
                     Previous
                 </button>
-                {/* Hide page numbers on mobile, show only on sm+ */}
+
+                {/* Page numbers */}
                 <div className="hidden sm:flex items-center gap-1">
-                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                        // Show first 5 pages or adjust for current page position
-                        let page = i + 1;
-                        if (totalPages > 5 && currentPage > 3) {
-                            page = Math.min(currentPage - 2 + i, totalPages - 4 + i);
+                    {getPageNumbers().map((page, index) => {
+                        if (page === '...') {
+                            return (
+                                <span key={`ellipsis-${index}`} className="px-2 text-slate-400 dark:text-slate-500">
+                                    ...
+                                </span>
+                            );
                         }
                         return (
                             <button
                                 key={page}
-                                onClick={() => onPageChange(page)}
+                                onClick={() => onPageChange(page as number)}
                                 className={`px-3 py-1.5 text-sm font-medium rounded-lg ${currentPage === page
                                     ? 'bg-blue-600 text-white'
                                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
@@ -217,10 +259,12 @@ export function Pagination({
                         );
                     })}
                 </div>
+
                 {/* Show current page indicator on mobile */}
                 <span className="sm:hidden text-sm text-slate-500 dark:text-slate-400">
                     {currentPage} / {totalPages}
                 </span>
+
                 <button
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
