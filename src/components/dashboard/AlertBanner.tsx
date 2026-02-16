@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useData } from '../../context/DataContext';
+import { useAlerts } from '../../context/DataContext';
 import { AlertCircle, X, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function AlertBanner() {
-    const { alerts } = useData();
+    const { alerts } = useAlerts();
     const navigate = useNavigate();
     const activeAlerts = alerts.filter(a => a.status === 'active' && (a.type === 'error' || a.type === 'warning'));
     const [dismissed, setDismissed] = useState(false);

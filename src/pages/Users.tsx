@@ -4,12 +4,12 @@ import {
     Card, CardHeader, CardBody, Table, Button, SearchInput,
     Modal, ConfirmModal, Input, Select, Badge, RoleBadge
 } from '../components/ui';
-import { useData } from '../context/DataContext';
+import { useUsers } from '../context/DataContext';
 import type { User as UserType, UserRole, UserStatus } from '../types';
 import { PermissionGuard } from '../components/auth/PermissionGuard';
 
 export function Users() {
-    const { users, addUser, updateUser, deleteUser } = useData();
+    const { users, addUser, updateUser, deleteUser } = useUsers();
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState<string>('all');
     const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -56,7 +56,7 @@ export function Users() {
             updateUser(selectedUser.id, formData);
         } else {
             const newUser: UserType = {
-                id: `user-${Date.now()}`,
+                id: `user-${crypto.randomUUID()}`,
                 name: formData.name,
                 email: formData.email,
                 role: formData.role,

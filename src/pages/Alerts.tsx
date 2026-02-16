@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     AlertTriangle,
     AlertCircle,
@@ -8,12 +8,12 @@ import {
     Trash2
 } from 'lucide-react';
 import { Card, CardBody, Table, Pagination, Badge, Button, Select, SearchInput, ConfirmModal } from '../components/ui';
-import { useData } from '../context/DataContext';
+import { useAlerts } from '../context/DataContext';
 import { PermissionGuard } from '../components/auth/PermissionGuard';
 import type { Alert } from '../types';
 
 export function Alerts() {
-    const { alerts, updateAlertStatus, deleteAlert } = useData();
+    const { alerts, updateAlertStatus, deleteAlert } = useAlerts();
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<string>('all');
     const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -48,8 +48,11 @@ export function Alerts() {
         currentPage * ITEMS_PER_PAGE
     );
 
-    useMemo(() => {
-        if (currentPage > totalPages && totalPages > 0) setCurrentPage(1);
+    // Clamp currentPage to valid range when data changes
+    useEffect(() => {
+        if (totalPages > 0 && currentPage > totalPages) {
+            setCurrentPage(Math.max(1, totalPages));
+        }
     }, [totalPages, currentPage]);
 
     const columns = [

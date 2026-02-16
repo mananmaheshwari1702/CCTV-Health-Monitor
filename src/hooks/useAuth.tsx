@@ -7,6 +7,7 @@ interface AuthContextType {
     login: (role: UserRole) => void;
     logout: () => void;
     hasPermission: (requiredRole: UserRole | UserRole[]) => boolean;
+    updateUser: (data: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,22 +28,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
     };
 
+    const updateUser = (data: Partial<User>) => {
+        if (user) {
+            setUser({ ...user, ...data });
+        }
+    };
+
     const hasPermission = (requiredRole: UserRole | UserRole[]) => {
         if (!user) return false;
 
-        const roles: UserRole[] = ['admin', 'manager', 'technician', 'viewer'];
-        const userRoleIndex = roles.indexOf(user.role);
-
-        if (Array.isArray(requiredRole)) {
-            return requiredRole.includes(user.role);
-        }
-
-        // Simple hierarchy: admin > manager > technician > viewer
-        // But for this app, we might want strict equality or simplified "canEdit" logic
-        // For now, let's just check if the role matches or is 'admin' (super user)
+        // Admin always has permission
         if (user.role === 'admin') return true;
 
-        return user.role === requiredRole;
+        // Normalize to array and check if user's role is included
+        const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+        return roles.includes(user.role);
     };
 
     // Improved Permission Logic Helper
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const canViewOnly = user?.role === 'viewer';
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, hasPermission }}>
+        <AuthContext.Provider value={{ user, login, logout, hasPermission, updateUser }}>
             {children}
         </AuthContext.Provider>
     );

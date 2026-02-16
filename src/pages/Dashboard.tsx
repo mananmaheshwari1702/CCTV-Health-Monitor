@@ -22,12 +22,15 @@ import {
     Settings
 } from 'lucide-react';
 import { StatsCard, Card, CardHeader, CardBody, Badge, Button, Select } from '../components/ui';
-import { useData } from '../context/DataContext';
+import { useTickets, useAlerts, useDevicesSites, useSettings } from '../context/DataContext';
 import { AlertBanner } from '../components/dashboard/AlertBanner';
 
 export function Dashboard() {
     const navigate = useNavigate();
-    const { dashboardStats, alerts, tickets, devices, sites, dashboardConfig, updateDashboardConfig } = useData();
+    const { tickets } = useTickets();
+    const { alerts } = useAlerts();
+    const { devices, sites } = useDevicesSites();
+    const { dashboardStats, dashboardConfig, updateDashboardConfig } = useSettings();
     const [isConfigOpen, setIsConfigOpen] = React.useState(false);
 
     // Filter States
@@ -70,18 +73,28 @@ export function Dashboard() {
             recordingMissing: filteredDevices.filter(d => d.recordingStatus === 'not_recording' || d.status === 'warning').length,
             openTickets: filteredTickets.filter(t => t.status === 'open' || t.status === 'in_progress').length,
             criticalTickets: filteredTickets.filter(t => t.priority === 'critical' && t.status !== 'closed').length,
-            // Recalculate rates based on filtered subset? Or keep global?
-            // Usually dashboard analytics implies the stats reflect the current view.
             resolutionRate: (() => {
                 if (filteredTickets.length === 0) return 0;
                 const resolvedCount = filteredTickets.filter(t => t.status === 'resolved' || t.status === 'closed').length;
                 return Math.round((resolvedCount / filteredTickets.length) * 100);
             })(),
-            avgResponseTime: dashboardStats.avgResponseTime // Keep global for now as detailed history logic is complex to re-reduce here without full comments data
+            avgResponseTime: (() => {
+                const respondedTickets = filteredTickets.filter(t => t.comments && t.comments.length > 0);
+                if (respondedTickets.length === 0) return 0;
+
+                const totalResponseTime = respondedTickets.reduce((acc, ticket) => {
+                    const firstResponse = ticket.comments![0].createdAt;
+                    const created = ticket.createdAt;
+                    return acc + (new Date(firstResponse).getTime() - new Date(created).getTime());
+                }, 0);
+
+                const avgMs = totalResponseTime / respondedTickets.length;
+                return Number((avgMs / (1000 * 60 * 60)).toFixed(1));
+            })(),
         };
 
         return { devices: filteredDevices, tickets: filteredTickets, stats };
-    }, [devices, tickets, selectedSite, selectedDeviceType, selectedStatus, dashboardStats.avgResponseTime]);
+    }, [devices, tickets, selectedSite, selectedDeviceType, selectedStatus]);
 
     const stats = filteredData.stats;
     const { resolutionRate, avgResponseTime } = stats;

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ArrowLeft,
@@ -36,8 +36,8 @@ import {
     HealthBadge,
     Modal,
 } from '../components/ui';
-import { useData } from '../context/DataContext';
-import { devices, tickets, deviceCameras, deviceStatsData, healthTimelineEvents, generateRecordingCalendar } from '../data/mockData';
+import { useTickets, useDevicesSites } from '../context/DataContext';
+import { deviceCameras, deviceStatsData, healthTimelineEvents, generateRecordingCalendar } from '../data/mockData';
 import type { RecordingDay, HealthTimelineEvent as TimelineEvent } from '../types';
 
 
@@ -89,15 +89,94 @@ const severityBorder: Record<string, string> = {
     error: 'border-red-500',
 };
 
+// ─── Memoized Calendar Sub-components ─────────────────────────────────
+interface RecordingCellProps {
+    camId: string;
+    camName: string;
+    date: string;
+    status: string;
+    entry: RecordingDay | undefined;
+    onSelect: (entry: RecordingDay) => void;
+}
+
+const RecordingCell = React.memo(function RecordingCell({
+    camId, camName, date, status, entry, onSelect,
+}: RecordingCellProps) {
+    const cellColor =
+        status === 'available'
+            ? 'bg-emerald-500 hover:bg-emerald-600'
+            : status === 'missing'
+                ? 'bg-red-500 hover:bg-red-600 cursor-pointer'
+                : 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600';
+
+    return (
+        <button
+            className={`h-5 rounded-sm ${cellColor} transition-colors`}
+            onClick={
+                status === 'missing' && entry
+                    ? () => onSelect(entry)
+                    : undefined
+            }
+            title={`${camName} — ${formatDate(date)} — ${status.replace('_', ' ')}`}
+        />
+    );
+});
+
+interface CameraRowProps {
+    camId: string;
+    camName: string;
+    dateRange: string[];
+    recordingDataMap: Map<string, RecordingDay>;
+    onSelect: (entry: RecordingDay) => void;
+}
+
+const CameraRow = React.memo(function CameraRow({
+    camId, camName, dateRange, recordingDataMap, onSelect,
+}: CameraRowProps) {
+    return (
+        <div className="flex items-center mt-1">
+            <div className="w-32 flex-shrink-0 pr-2">
+                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate" title={camName}>
+                    {camName}
+                </p>
+            </div>
+            <div className="flex-1 grid gap-px" style={{ gridTemplateColumns: `repeat(${dateRange.length}, 1fr)` }}>
+                {dateRange.map((date) => {
+                    const entry = recordingDataMap.get(`${camId}-${date}`);
+                    const status = entry?.status ?? 'no_data';
+                    return (
+                        <RecordingCell
+                            key={`${camId}-${date}`}
+                            camId={camId}
+                            camName={camName}
+                            date={date}
+                            status={status}
+                            entry={entry}
+                            onSelect={onSelect}
+                        />
+                    );
+                })}
+            </div>
+        </div>
+    );
+});
+
 // ─── Main Component ──────────────────────────────────────────────────
 export function DeviceDetail() {
     const { deviceId } = useParams();
     const navigate = useNavigate();
-    const { addTicket } = useData();
+    const { tickets, addTicket } = useTickets();
+    const { devices } = useDevicesSites();
 
     const [selectedRecording, setSelectedRecording] = useState<RecordingDay | null>(null);
     const [ticketCreated, setTicketCreated] = useState(false);
     const [selectedMonth, setSelectedMonth] = useState(() => new Date(2026, 1, 1)); // Feb 2026
+
+    // Stable callback for memoized calendar cells
+    const handleSelectRecording = useCallback((entry: RecordingDay) => {
+        setSelectedRecording(entry);
+        setTicketCreated(false);
+    }, []);
 
     const device = devices.find((d) => d.id === deviceId);
     const deviceTickets = tickets.filter((t) => t.deviceId === deviceId);
@@ -184,7 +263,7 @@ export function DeviceDetail() {
         if (!selectedRecording || !device) return;
 
         addTicket({
-            id: `tkt-${Date.now()}`,
+            id: `tkt-${crypto.randomUUID()}`,
             title: `Missing Recording: ${selectedRecording.cameraName}`,
             description: `Recording data missing for camera ${selectedRecording.cameraName} on ${formatDate(selectedRecording.date)}.`,
             priority: 'medium',
@@ -537,50 +616,16 @@ export function DeviceDetail() {
                                         </div>
                                     </div>
 
-                                    {/* Camera Rows */}
+                                    {/* Camera Rows (memoized) */}
                                     {calendarCameras.map(([camId, camName]) => (
-                                        <div key={camId} className="flex items-center mt-1">
-                                            <div className="w-32 flex-shrink-0 pr-2">
-                                                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate" title={camName}>
-                                                    {camName}
-                                                </p>
-                                            </div>
-                                            <div className="flex-1 grid gap-px" style={{ gridTemplateColumns: `repeat(${dateRange.length}, 1fr)` }}>
-                                                {dateRange.map((date) => {
-                                                    // Optimized lookup using the map
-                                                    const entry = recordingDataMap.get(`${camId}-${date}`);
-                                                    const status = entry?.status ?? 'no_data';
-
-                                                    const cellColor =
-                                                        status === 'available'
-                                                            ? 'bg-emerald-500 hover:bg-emerald-600'
-                                                            : status === 'missing'
-                                                                ? 'bg-red-500 hover:bg-red-600 cursor-pointer'
-                                                                : 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600';
-
-                                                    return (
-                                                        <button
-                                                            key={`${camId}-${date}`}
-                                                            className={`h-5 rounded-sm ${cellColor} transition-colors relative group`}
-                                                            onClick={() => {
-                                                                if (status === 'missing' && entry) {
-                                                                    setSelectedRecording(entry);
-                                                                    setTicketCreated(false);
-                                                                }
-                                                            }}
-                                                            title={`${camName} — ${formatDate(date)} — ${status.replace('_', ' ')}`}
-                                                        >
-                                                            {/* Tooltip */}
-                                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-20 pointer-events-none">
-                                                                <div className="bg-slate-900 dark:bg-slate-700 text-white text-[10px] rounded px-2 py-1 whitespace-nowrap shadow-lg">
-                                                                    {formatDate(date)} — {status.replace('_', ' ')}
-                                                                </div>
-                                                            </div>
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
+                                        <CameraRow
+                                            key={camId}
+                                            camId={camId}
+                                            camName={camName}
+                                            dateRange={dateRange}
+                                            recordingDataMap={recordingDataMap}
+                                            onSelect={handleSelectRecording}
+                                        />
                                     ))}
                                 </div>
                             </div>
@@ -655,7 +700,10 @@ export function DeviceDetail() {
                                         </div>
                                         <Badge
                                             variant={
-                                                ticket.priority === 'critical' ? 'danger' : 'warning'
+                                                ticket.priority === 'critical' ? 'danger'
+                                                    : ticket.priority === 'high' ? 'warning'
+                                                        : ticket.priority === 'medium' ? 'info'
+                                                            : 'success'
                                             }
                                             size="sm"
                                         >

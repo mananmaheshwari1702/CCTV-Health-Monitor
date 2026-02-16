@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Filter,
@@ -20,7 +20,7 @@ import {
     ConfirmModal,
     SearchInput
 } from '../components/ui';
-import { useData } from '../context/DataContext';
+import { useTickets, useDevicesSites } from '../context/DataContext';
 import { Ticket as TicketType } from '../types';
 import { PermissionGuard } from '../components/auth/PermissionGuard';
 
@@ -29,7 +29,8 @@ const ITEMS_PER_PAGE = 10;
 export function Tickets() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { tickets, devices, sites, addTicket, deleteTicket } = useData();
+    const { tickets, addTicket, deleteTicket } = useTickets();
+    const { devices, sites } = useDevicesSites();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [priorityFilter, setPriorityFilter] = useState<string>('all');
@@ -67,7 +68,7 @@ export function Tickets() {
         if (!selectedDevice) return;
 
         const ticket: TicketType = {
-            id: `TKT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            id: `TKT-${crypto.randomUUID()}`,
             title: newTicket.title,
             description: newTicket.description,
             priority: newTicket.priority as any,
@@ -119,9 +120,11 @@ export function Tickets() {
         currentPage * ITEMS_PER_PAGE
     );
 
-    // Reset to page 1 when filters reduce results
-    useMemo(() => {
-        if (currentPage > totalPages && totalPages > 0) setCurrentPage(1);
+    // Clamp currentPage to valid range when data changes
+    useEffect(() => {
+        if (totalPages > 0 && currentPage > totalPages) {
+            setCurrentPage(Math.max(1, totalPages));
+        }
     }, [totalPages, currentPage]);
 
     const columns = [

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Bell, Shield, Database, Globe, Mail, Smartphone, Monitor, Moon, Sun, Lock } from 'lucide-react';
+import { Save, Bell, Shield, Database, Globe, Mail, Smartphone, Monitor, Lock } from 'lucide-react';
 import { Card, CardHeader, CardBody, CardFooter, Button, Input, Select, useToast } from '../components/ui';
-import { useTheme } from '../context/ThemeContext';
-import { useData } from '../context/DataContext';
+import { useSettings } from '../context/DataContext';
 import { PermissionGuard } from '../components/auth/PermissionGuard';
 
 export function Settings() {
-    const { theme, setTheme, isDark } = useTheme();
-    const { settings, updateSettings } = useData();
+    const { settings, updateSettings } = useSettings();
     const toast = useToast();
 
     // Local state for form handling to avoid jitter, sync on mount
@@ -144,38 +142,6 @@ export function Settings() {
                     </CardBody>
                 </Card>
 
-                {/* Appearance */}
-                <Card>
-                    <CardHeader>Appearance</CardHeader>
-                    <CardBody>
-                        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg transition-colors">
-                            <div className="flex items-center gap-4">
-                                <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
-                                    {theme === 'dark' || (theme === 'system' && isDark) ? (
-                                        <Moon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-                                    ) : (
-                                        <Sun className="w-5 h-5 text-amber-500" />
-                                    )}
-                                </div>
-                                <div>
-                                    <p className="font-medium text-slate-900 dark:text-white">Theme Preference</p>
-                                    <p className="text-sm text-slate-500 dark:text-slate-300">Choose your preferred appearance</p>
-                                </div>
-                            </div>
-                            <div className="w-48">
-                                <Select
-                                    options={[
-                                        { value: 'light', label: 'Light Mode' },
-                                        { value: 'dark', label: 'Dark Mode' },
-                                        { value: 'system', label: 'System Default' },
-                                    ]}
-                                    value={theme}
-                                    onChange={(e) => setTheme(e.target.value as any)}
-                                />
-                            </div>
-                        </div>
-                    </CardBody>
-                </Card>
 
 
 

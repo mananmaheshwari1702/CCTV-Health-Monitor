@@ -35,7 +35,7 @@ import {
     Modal,
     ConfirmModal
 } from '../components/ui';
-import { useData } from '../context/DataContext';
+import { useDevicesSites } from '../context/DataContext';
 import type { Device } from '../types';
 import { PermissionGuard } from '../components/auth/PermissionGuard';
 import { formatDistanceToNow } from 'date-fns';
@@ -59,7 +59,7 @@ function timeAgo(dateString: string) {
 
 export function Devices() {
     const navigate = useNavigate();
-    const { devices, sites, addDevice, updateDevice, deleteDevice } = useData();
+    const { devices, sites, addDevice, updateDevice, deleteDevice } = useDevicesSites();
     const [searchQuery, setSearchQuery] = useState('');
     const [searchParams] = useSearchParams();
     const [statusFilter, setStatusFilter] = useState('all');
@@ -72,11 +72,11 @@ export function Devices() {
     const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string }>({ isOpen: false, id: '' });
 
-    // Form State
+    // Form State — siteId is set at modal-open time via resetForm, not at mount
     const [formData, setFormData] = useState({
         name: '',
         type: 'camera',
-        siteId: sites[0]?.id || '',
+        siteId: '',
         ipAddress: '',
         model: '',
         siteName: ''
@@ -127,7 +127,7 @@ export function Devices() {
             });
         } else {
             const device: Device = {
-                id: `dev-${Date.now()}`,
+                id: `dev-${crypto.randomUUID()}`,
                 name: formData.name,
                 siteId: formData.siteId,
                 siteName: siteName,
@@ -204,16 +204,16 @@ export function Devices() {
         }
     };
 
-    // Status counts for the summary cards
+    // Status counts for the summary cards — derived from filteredDevices so cards respect filters
     const statusCounts = useMemo(() => {
-        const counts = { total: devices.length, online: 0, offline: 0, warning: 0 };
-        devices.forEach((d) => {
+        const counts = { total: filteredDevices.length, online: 0, offline: 0, warning: 0 };
+        filteredDevices.forEach((d) => {
             if (d.status === 'online') counts.online++;
             else if (d.status === 'offline') counts.offline++;
             else counts.warning++;
         });
         return counts;
-    }, [devices]);
+    }, [filteredDevices]);
 
     const columns = [
         {
@@ -507,7 +507,8 @@ export function Devices() {
                             options={[
                                 { value: 'camera', label: 'Camera' },
                                 { value: 'nvr', label: 'NVR' },
-                                { value: 'server', label: 'Server' },
+                                { value: 'dvr', label: 'DVR' },
+                                { value: 'switch', label: 'Switch' },
                             ]}
                         />
                     </div>

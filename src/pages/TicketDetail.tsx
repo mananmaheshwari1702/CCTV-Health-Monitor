@@ -5,13 +5,13 @@ import { ArrowLeft, Clock, MapPin, HardDrive, User, Send, Trash2 } from 'lucide-
 import { PermissionGuard } from '../components/auth/PermissionGuard';
 import { useAuth } from '../hooks/useAuth';
 import type { Ticket, TicketStatus, TicketComment } from '../types';
-import { useData } from '../context/DataContext';
+import { useTickets } from '../context/DataContext';
 
 export function TicketDetail() {
     const { ticketId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { tickets, updateTicket, addTicketComment, deleteTicket } = useData();
+    const { tickets, updateTicket, addTicketComment, deleteTicket } = useTickets();
 
     // Find ticket from context instead of initial mock data
     const ticket = tickets.find(t => t.id === ticketId);
@@ -38,7 +38,7 @@ export function TicketDetail() {
         if (!newComment.trim() || !user) return;
 
         const comment: TicketComment = {
-            id: `cm-${Date.now()}`,
+            id: `cm-${crypto.randomUUID()}`,
             ticketId: ticket.id,
             userId: user.id,
             userName: user.name,

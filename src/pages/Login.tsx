@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Camera, Eye, EyeOff, Lock, Mail, Shield } from 'lucide-react';
 import { Button } from '../components/ui';
 import { useAuth } from '../hooks/useAuth';
-import { useData } from '../context/DataContext';
+import { useSettings } from '../context/DataContext';
 
 export function Login() {
     const navigate = useNavigate();
     const { login } = useAuth();
-    const { settings } = useData(); // Access settings for security config
+    const { settings } = useSettings(); // Access settings for security config
 
     // Login State
     const [step, setStep] = useState<'credentials' | '2fa'>('credentials');

@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Layout } from './components/layout';
-import { Login, Dashboard, Sites, Devices, DeviceDetail, Tickets, TicketDetail, Reports, Users, Settings, Alerts } from './pages';
+import { Login, Dashboard, Sites, Devices, DeviceDetail, Tickets, TicketDetail, Reports, Users, Settings, Alerts, Profile } from './pages';
 
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './hooks/useAuth';
@@ -61,6 +61,9 @@ function App() {
                   <Route element={<RoleProtectedRoute allowedRoles={['admin', 'manager']} />}>
                     <Route path="/settings" element={<Settings />} />
                   </Route>
+
+                  {/* Profile Route - Accessible to all authenticated users */}
+                  <Route path="/profile" element={<Profile />} />
                 </Route>
 
                 {/* Default Redirect */}

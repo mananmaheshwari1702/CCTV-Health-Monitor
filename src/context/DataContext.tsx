@@ -1,54 +1,66 @@
-import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback } from 'react';
 import {
     tickets as initialTickets,
     alerts as initialAlerts,
     users as initialUsers,
     devices as initialDevices,
     sites as initialSites,
-    // dashboardStats as initialStats // Removed as we calculate dynamically
 } from '../data/mockData';
 import type { Ticket, Alert, User, Device, Site, DashboardStats, TicketComment, AlertStatus, TicketStatus, AppSettings, DashboardLayoutConfig } from '../types';
 import { useAuth } from '../hooks/useAuth';
 
-interface DataContextType {
-    tickets: Ticket[];
-    alerts: Alert[];
-    users: User[];
-    devices: Device[];
-    sites: Site[];
-    dashboardStats: DashboardStats;
-    settings: AppSettings;
+// ── Domain-specific context types ────────────────────────────────────────
 
-    // Actions
+interface TicketsContextType {
+    tickets: Ticket[];
     addTicket: (ticket: Ticket) => void;
     updateTicket: (id: string, updates: Partial<Ticket>) => void;
     deleteTicket: (id: string) => void;
     addTicketComment: (ticketId: string, comment: TicketComment) => void;
+}
 
+interface AlertsContextType {
+    alerts: Alert[];
     addAlert: (alert: Alert) => void;
     updateAlertStatus: (id: string, status: AlertStatus) => void;
     deleteAlert: (id: string) => void;
+}
 
-    addUser: (user: User) => void;
-    updateUser: (id: string, updates: Partial<User>) => void;
-    deleteUser: (id: string) => void;
-
-    updateDevice: (id: string, updates: Partial<Device>) => void;
+interface DevicesSitesContextType {
+    devices: Device[];
+    sites: Site[];
     addDevice: (device: Device) => void;
+    updateDevice: (id: string, updates: Partial<Device>) => void;
     deleteDevice: (id: string) => void;
-
-    // Site Actions
     addSite: (site: Site) => void;
     updateSite: (id: string, updates: Partial<Site>) => void;
     deleteSite: (id: string) => void;
+}
 
-    updateSettings: (updates: Partial<AppSettings>) => void;
+interface UsersContextType {
+    users: User[];
+    addUser: (user: User) => void;
+    updateUser: (id: string, updates: Partial<User>) => void;
+    deleteUser: (id: string) => void;
+}
 
+interface SettingsContextType {
+    settings: AppSettings;
+    dashboardStats: DashboardStats;
     dashboardConfig: DashboardLayoutConfig;
+    updateSettings: (updates: Partial<AppSettings>) => void;
     updateDashboardConfig: (updates: Partial<DashboardLayoutConfig>) => void;
 }
 
-const DataContext = createContext<DataContextType | undefined>(undefined);
+// ── Create contexts ──────────────────────────────────────────────────────
+
+const TicketsContext = createContext<TicketsContextType | undefined>(undefined);
+const AlertsContext = createContext<AlertsContextType | undefined>(undefined);
+const DevicesSitesContext = createContext<DevicesSitesContextType | undefined>(undefined);
+const UsersContext = createContext<UsersContextType | undefined>(undefined);
+const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
+
+// ── DataProvider (single component, nested providers) ────────────────────
 
 export function DataProvider({ children }: { children: ReactNode }) {
     const { user } = useAuth();
@@ -96,7 +108,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
 
     // --- Access Control Logic ---
-    // Calculate visible data based on user role and assigned sites
 
     // 1. Visible Sites
     const sites = useMemo(() => {
@@ -129,8 +140,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         return rawAlerts.filter(alert => visibleDeviceIds.includes(alert.deviceId));
     }, [user, rawAlerts, devices]);
 
-
-    // Calculate dynamic stats based on *Filtered* visible data
+    // Calculate dynamic stats
     const dashboardStats = useMemo<DashboardStats>(() => ({
         totalDevices: devices.length,
         onlineDevices: devices.filter(d => d.status === 'online').length,
@@ -160,23 +170,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
         })(),
     }), [devices, tickets]);
 
-    // Helper to add IDs to updates for consistency with original pattern if strictly needed,
-    // but here we just update state arrays.
+    // ── Stable action callbacks ──────────────────────────────────────────
 
     // Ticket Actions
-    const addTicket = (ticket: Ticket) => {
+    const addTicket = useCallback((ticket: Ticket) => {
         setRawTickets(prev => [ticket, ...prev]);
-    };
+    }, []);
 
-    const updateTicket = (id: string, updates: Partial<Ticket>) => {
+    const updateTicket = useCallback((id: string, updates: Partial<Ticket>) => {
         setRawTickets(prev => prev.map(t => t.id === id ? { ...t, ...updates, updatedAt: new Date().toISOString() } : t));
-    };
+    }, []);
 
-    const deleteTicket = (id: string) => {
+    const deleteTicket = useCallback((id: string) => {
         setRawTickets(prev => prev.filter(t => t.id !== id));
-    };
+    }, []);
 
-    const addTicketComment = (ticketId: string, comment: TicketComment) => {
+    const addTicketComment = useCallback((ticketId: string, comment: TicketComment) => {
         setRawTickets(prev => prev.map(t => {
             if (t.id === ticketId) {
                 return {
@@ -187,62 +196,62 @@ export function DataProvider({ children }: { children: ReactNode }) {
             }
             return t;
         }));
-    };
+    }, []);
 
     // Alert Actions
-    const addAlert = (alert: Alert) => {
+    const addAlert = useCallback((alert: Alert) => {
         setRawAlerts(prev => [alert, ...prev]);
-    };
+    }, []);
 
-    const updateAlertStatus = (id: string, status: AlertStatus) => {
+    const updateAlertStatus = useCallback((id: string, status: AlertStatus) => {
         setRawAlerts(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-    };
+    }, []);
 
-    const deleteAlert = (id: string) => {
+    const deleteAlert = useCallback((id: string) => {
         setRawAlerts(prev => prev.filter(a => a.id !== id));
-    };
+    }, []);
 
     // User Actions
-    const addUser = (user: User) => {
-        setUsers(prev => [...prev, user]);
-    };
+    const addUser = useCallback((newUser: User) => {
+        setUsers(prev => [...prev, newUser]);
+    }, []);
 
-    const updateUser = (id: string, updates: Partial<User>) => {
+    const updateUser = useCallback((id: string, updates: Partial<User>) => {
         setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
-    };
+    }, []);
 
-    const deleteUser = (id: string) => {
+    const deleteUser = useCallback((id: string) => {
         setUsers(prev => prev.filter(u => u.id !== id));
-    };
+    }, []);
 
     // Device Actions
-    const updateDevice = (id: string, updates: Partial<Device>) => {
+    const updateDevice = useCallback((id: string, updates: Partial<Device>) => {
         setRawDevices(prev => prev.map(d => d.id === id ? { ...d, ...updates } : d));
-    };
+    }, []);
 
-    const addDevice = (device: Device) => {
+    const addDevice = useCallback((device: Device) => {
         setRawDevices(prev => [...prev, device]);
-    };
+    }, []);
 
-    const deleteDevice = (id: string) => {
+    const deleteDevice = useCallback((id: string) => {
         setRawDevices(prev => prev.filter(d => d.id !== id));
-    };
+    }, []);
 
     // Site Actions
-    const addSite = (site: Site) => {
+    const addSite = useCallback((site: Site) => {
         setRawSites(prev => [...prev, site]);
-    };
+    }, []);
 
-    const updateSite = (id: string, updates: Partial<Site>) => {
+    const updateSite = useCallback((id: string, updates: Partial<Site>) => {
         setRawSites(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
-    };
+    }, []);
 
-    const deleteSite = (id: string) => {
+    const deleteSite = useCallback((id: string) => {
         setRawSites(prev => prev.filter(s => s.id !== id));
-    };
+    }, []);
 
-    // Settings Actions
-    const updateSettings = (updates: Partial<AppSettings>) => {
+    // Settings Actions — deep-merges all nested sections to avoid dropping sibling keys
+    const updateSettings = useCallback((updates: Partial<AppSettings>) => {
         setSettings(prev => ({
             ...prev,
             ...updates,
@@ -253,56 +262,113 @@ export function DataProvider({ children }: { children: ReactNode }) {
             system: {
                 ...prev.system,
                 ...(updates.system || {})
+            },
+            security: {
+                ...prev.security,
+                ...(updates.security || {})
             }
         }));
-    };
+    }, []);
 
-    const updateDashboardConfig = (updates: Partial<DashboardLayoutConfig>) => {
+    const updateDashboardConfig = useCallback((updates: Partial<DashboardLayoutConfig>) => {
         setDashboardConfig(prev => {
             const next = { ...prev, ...updates };
             localStorage.setItem('dashboardConfig', JSON.stringify(next));
             return next;
         });
-    };
+    }, []);
+
+    // ── Memoized context values (one per domain) ─────────────────────────
+
+    const ticketsValue = useMemo<TicketsContextType>(() => ({
+        tickets, addTicket, updateTicket, deleteTicket, addTicketComment,
+    }), [tickets, addTicket, updateTicket, deleteTicket, addTicketComment]);
+
+    const alertsValue = useMemo<AlertsContextType>(() => ({
+        alerts, addAlert, updateAlertStatus, deleteAlert,
+    }), [alerts, addAlert, updateAlertStatus, deleteAlert]);
+
+    const devicesSitesValue = useMemo<DevicesSitesContextType>(() => ({
+        devices, sites, addDevice, updateDevice, deleteDevice, addSite, updateSite, deleteSite,
+    }), [devices, sites, addDevice, updateDevice, deleteDevice, addSite, updateSite, deleteSite]);
+
+    const usersValue = useMemo<UsersContextType>(() => ({
+        users, addUser, updateUser, deleteUser,
+    }), [users, addUser, updateUser, deleteUser]);
+
+    const settingsValue = useMemo<SettingsContextType>(() => ({
+        settings, dashboardStats, dashboardConfig, updateSettings, updateDashboardConfig,
+    }), [settings, dashboardStats, dashboardConfig, updateSettings, updateDashboardConfig]);
+
+    // ── Nested providers ─────────────────────────────────────────────────
 
     return (
-        <DataContext.Provider value={{
-            tickets,
-            alerts,
-            users,
-            devices,
-            sites,
-            dashboardStats,
-            settings,
-            dashboardConfig,
-            addTicket,
-            updateTicket,
-            deleteTicket,
-            addTicketComment,
-            addAlert,
-            updateAlertStatus,
-            deleteAlert,
-            addUser,
-            updateUser,
-            deleteUser,
-            updateDevice,
-            addDevice,
-            deleteDevice,
-            addSite,
-            updateSite,
-            deleteSite,
-            updateSettings,
-            updateDashboardConfig
-        }}>
-            {children}
-        </DataContext.Provider>
+        <TicketsContext.Provider value={ticketsValue}>
+            <AlertsContext.Provider value={alertsValue}>
+                <DevicesSitesContext.Provider value={devicesSitesValue}>
+                    <UsersContext.Provider value={usersValue}>
+                        <SettingsContext.Provider value={settingsValue}>
+                            {children}
+                        </SettingsContext.Provider>
+                    </UsersContext.Provider>
+                </DevicesSitesContext.Provider>
+            </AlertsContext.Provider>
+        </TicketsContext.Provider>
     );
 }
 
-export function useData() {
-    const context = useContext(DataContext);
+// ── Domain-specific hooks ────────────────────────────────────────────────
+
+export function useTickets() {
+    const context = useContext(TicketsContext);
     if (context === undefined) {
-        throw new Error('useData must be used within a DataProvider');
+        throw new Error('useTickets must be used within a DataProvider');
     }
     return context;
+}
+
+export function useAlerts() {
+    const context = useContext(AlertsContext);
+    if (context === undefined) {
+        throw new Error('useAlerts must be used within a DataProvider');
+    }
+    return context;
+}
+
+export function useDevicesSites() {
+    const context = useContext(DevicesSitesContext);
+    if (context === undefined) {
+        throw new Error('useDevicesSites must be used within a DataProvider');
+    }
+    return context;
+}
+
+export function useUsers() {
+    const context = useContext(UsersContext);
+    if (context === undefined) {
+        throw new Error('useUsers must be used within a DataProvider');
+    }
+    return context;
+}
+
+export function useSettings() {
+    const context = useContext(SettingsContext);
+    if (context === undefined) {
+        throw new Error('useSettings must be used within a DataProvider');
+    }
+    return context;
+}
+
+// ── Backward-compatible façade ───────────────────────────────────────────
+// Composes all 5 domain hooks into a single object matching the old API.
+// Consumers should migrate to domain-specific hooks for optimal performance.
+
+export function useData() {
+    return {
+        ...useTickets(),
+        ...useAlerts(),
+        ...useDevicesSites(),
+        ...useUsers(),
+        ...useSettings(),
+    };
 }

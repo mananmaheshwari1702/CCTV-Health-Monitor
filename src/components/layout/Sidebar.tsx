@@ -8,9 +8,11 @@ import {
     Ticket,
     FileText,
     Users,
+    User,
     Settings,
     ChevronLeft,
     ChevronRight,
+    ChevronUp,
     Camera,
     Shield,
     X,
@@ -32,12 +34,12 @@ const allNavItems = [
     { path: '/alerts', label: 'Alerts', icon: Shield, roles: ['admin', 'manager', 'technician', 'viewer'] },
     { path: '/reports', label: 'Reports', icon: FileText, roles: ['admin', 'manager', 'technician', 'viewer'] },
     { path: '/users', label: 'Users & Roles', icon: Users, roles: ['admin'] },
-    { path: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'manager', 'technician', 'viewer'] },
 ];
 
 export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose }: SidebarProps) {
     const location = useLocation();
     const { user, logout } = useAuth();
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const navItems = allNavItems.filter(item =>
         user && item.roles.includes(user.role)
@@ -45,7 +47,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose
 
     return (
         <aside
-            className={`fixed left-0 top-0 z-40 h-screen bg-slate-900 transition-all duration-300
+            className={`fixed left-0 top-0 z-40 h-screen bg-slate-900 transition-all duration-300 flex flex-col
                 ${collapsed ? 'w-20' : 'w-64'}
                 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} 
                 lg:translate-x-0`}
@@ -106,31 +108,72 @@ export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose
                 </ul>
             </nav>
 
-            {/* System Status */}
-            {!collapsed && (
-                <div className="px-4 py-4 border-t border-slate-800">
-                    <div className="p-3 bg-slate-800 rounded-lg mb-3">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Shield className="w-4 h-4 text-emerald-500" />
-                            <span className="text-sm font-medium text-slate-200">
-                                System Status
-                            </span>
+            {/* User Profile & Dropdown */}
+            <div className="border-t border-slate-800 p-3">
+                <div className="relative">
+                    {isProfileOpen && (
+                        <div className={`absolute bottom-full left-0 w-full mb-2 bg-slate-800 rounded-lg shadow-lg border border-slate-700 overflow-hidden ${collapsed ? 'w-56 left-full ml-2 bottom-0' : ''}`}>
+                            <div className="py-1">
+                                <NavLink
+                                    to="/profile"
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white"
+                                    onClick={() => setIsProfileOpen(false)}
+                                >
+                                    <User className="w-4 h-4" />
+                                    Profile
+                                </NavLink>
+                                <NavLink
+                                    to="/settings"
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white"
+                                    onClick={() => setIsProfileOpen(false)}
+                                >
+                                    <Settings className="w-4 h-4" />
+                                    Settings
+                                </NavLink>
+                                <div className="border-t border-slate-700 my-1"></div>
+                                <button
+                                    onClick={logout}
+                                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-slate-700 hover:text-red-300"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                    Sign Out
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                            <span className="text-xs text-slate-400">All systems operational</span>
-                        </div>
-                    </div>
+                    )}
 
                     <button
-                        onClick={logout}
-                        className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors group"
+                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                        className={`flex items-center gap-3 w-full p-2 rounded-lg hover:bg-slate-800 transition-colors ${isProfileOpen ? 'bg-slate-800' : ''}`}
                     >
-                        <LogOut className="w-5 h-5 flex-shrink-0 group-hover:text-red-400 transition-colors" />
-                        <span className="text-sm font-medium">Sign Out</span>
+                        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium flex-shrink-0 overflow-hidden">
+                            {user?.avatar && user.avatar.length > 4 ? (
+                                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-sm">
+                                    {user?.avatar || (user?.name || '')
+                                        .split(' ')
+                                        .map(n => n[0])
+                                        .join('')
+                                        .toUpperCase()
+                                        .slice(0, 2)}
+                                </span>
+                            )}
+                        </div>
+
+                        {!collapsed && (
+                            <div className="flex-1 text-left overflow-hidden">
+                                <p className="text-sm font-medium text-white truncate">{user?.name}</p>
+                                <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+                            </div>
+                        )}
+
+                        {!collapsed && (
+                            <ChevronUp className={`w-4 h-4 text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+                        )}
                     </button>
                 </div>
-            )}
+            </div>
 
             {/* Collapse Toggle - hidden on mobile */}
             <button

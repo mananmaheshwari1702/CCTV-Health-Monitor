@@ -11,6 +11,9 @@ import {
     Shield,
     Video,
     Ticket,
+    AlertTriangle,
+    CheckCircle,
+    Server
 } from 'lucide-react';
 import {
     Card,
@@ -22,11 +25,13 @@ import {
     Select,
 } from '../components/ui';
 import { useToast } from '../components/ui';
+import { useSettings } from '../context/DataContext';
 import { reports } from '../data/mockData';
 
 export function Reports() {
     const [selectedPeriod, setSelectedPeriod] = useState('last_7_days');
     const toast = useToast();
+    const { dashboardStats } = useSettings();
 
     const reportIcons = {
         health: TrendingUp,
@@ -75,17 +80,17 @@ export function Reports() {
                 </div>
             </div>
 
-            {/* Quick Stats */}
+            {/* Quick Stats (System Overview) */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
                     <CardBody>
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                                <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                <Server className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-slate-900 dark:text-white">24</p>
-                                <p className="text-sm text-slate-500 dark:text-slate-300">Reports Generated</p>
+                                <p className="text-2xl font-bold text-slate-900 dark:text-white">{dashboardStats.totalDevices}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-300">Total Devices</p>
                             </div>
                         </div>
                     </CardBody>
@@ -93,12 +98,12 @@ export function Reports() {
                 <Card>
                     <CardBody>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg">
-                                <Play className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                            <div className="p-2 bg-red-50 dark:bg-red-900/30 rounded-lg">
+                                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-slate-900 dark:text-white">4</p>
-                                <p className="text-sm text-slate-500 dark:text-slate-300">Scheduled Active</p>
+                                <p className="text-2xl font-bold text-slate-900 dark:text-white">{dashboardStats.criticalTickets}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-300">Critical Issues</p>
                             </div>
                         </div>
                     </CardBody>
@@ -107,11 +112,11 @@ export function Reports() {
                     <CardBody>
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg">
-                                <Download className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                                <Ticket className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-slate-900 dark:text-white">156</p>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">Total Downloads</p>
+                                <p className="text-2xl font-bold text-slate-900 dark:text-white">{dashboardStats.openTickets}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-300">Open Tickets</p>
                             </div>
                         </div>
                     </CardBody>
@@ -119,12 +124,12 @@ export function Reports() {
                 <Card>
                     <CardBody>
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
-                                <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg">
+                                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-slate-900 dark:text-white">2h ago</p>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">Last Generated</p>
+                                <p className="text-2xl font-bold text-slate-900 dark:text-white">{dashboardStats.onlineDevices}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-300">Online Devices</p>
                             </div>
                         </div>
                     </CardBody>

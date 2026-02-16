@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import {
     Bell,
     Search,
@@ -9,7 +9,7 @@ import {
     Settings,
     Menu,
 } from 'lucide-react';
-import { currentUser } from '../../data/mockData';
+import { useAuth } from '../../hooks/useAuth';
 
 interface HeaderProps {
     onMobileMenuToggle?: () => void;
@@ -27,6 +27,7 @@ const pageTitle: Record<string, string> = {
 
 export function Header({ onMobileMenuToggle, sidebarCollapsed }: HeaderProps) {
     const location = useLocation();
+    const { user, logout } = useAuth();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
 
@@ -119,42 +120,58 @@ export function Header({ onMobileMenuToggle, sidebarCollapsed }: HeaderProps) {
                             onClick={() => setUserMenuOpen(!userMenuOpen)}
                             className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
                         >
-                            <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white text-sm font-semibold rounded-full">
-                                {currentUser.avatar}
+                            <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white text-sm font-semibold rounded-full overflow-hidden">
+                                {user?.avatar && user.avatar.length > 4 ? (
+                                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-sm">
+                                        {user?.avatar || (user?.name || '')
+                                            .split(' ')
+                                            .map(n => n[0])
+                                            .join('')
+                                            .toUpperCase()
+                                            .slice(0, 2)}
+                                    </span>
+                                )}
                             </div>
                             <div className="hidden md:block text-left">
                                 <p className="text-sm font-medium text-slate-900 dark:text-white">
-                                    {currentUser.name}
+                                    {user?.name}
                                 </p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{currentUser.role}</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{user?.role}</p>
                             </div>
                             <ChevronDown className="w-4 h-4 text-slate-400" />
                         </button>
 
                         {userMenuOpen && (
                             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 py-2 z-50">
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/profile"
                                     className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                    onClick={() => setUserMenuOpen(false)}
                                 >
                                     <User className="w-4 h-4" />
                                     Profile
-                                </a>
-                                <a
-                                    href="/settings"
+                                </Link>
+                                <Link
+                                    to="/settings"
                                     className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                    onClick={() => setUserMenuOpen(false)}
                                 >
                                     <Settings className="w-4 h-4" />
                                     Settings
-                                </a>
+                                </Link>
                                 <hr className="my-2 border-slate-100 dark:border-slate-800" />
-                                <a
-                                    href="/login"
-                                    className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
+                                <button
+                                    onClick={() => {
+                                        logout();
+                                        setUserMenuOpen(false);
+                                    }}
+                                    className="flex w-full items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
                                 >
                                     <LogOut className="w-4 h-4" />
                                     Sign out
-                                </a>
+                                </button>
                             </div>
                         )}
                     </div>

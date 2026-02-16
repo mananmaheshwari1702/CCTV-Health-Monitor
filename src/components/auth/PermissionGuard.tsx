@@ -21,8 +21,11 @@ export function PermissionGuard({
 
     if (!user) return <>{fallback}</>;
 
+    // Admin bypass: admins always have access, consistent with useAuth.hasPermission
+    if (user.role === 'admin') return <>{children}</>;
+
     if (requireManageUsers) {
-        if (user.role !== 'admin') return <>{fallback}</>;
+        return <>{fallback}</>;
     }
 
     if (requireManageTickets) {

@@ -9,3 +9,4 @@ export * from './Alerts';
 export * from './Reports';
 export * from './Users';
 export * from './Settings';
+export * from './Profile';

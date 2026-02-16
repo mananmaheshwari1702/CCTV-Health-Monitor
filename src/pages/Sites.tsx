@@ -30,13 +30,13 @@ import {
     ConfirmModal,
     SearchInput
 } from '../components/ui';
-import { useData } from '../context/DataContext';
+import { useDevicesSites } from '../context/DataContext';
 import type { Site, Device } from '../types';
 import { PermissionGuard } from '../components/auth/PermissionGuard';
 
 export function Sites() {
     const navigate = useNavigate();
-    const { sites, devices, addSite, updateSite, deleteSite } = useData();
+    const { sites, devices, addSite, updateSite, deleteSite } = useDevicesSites();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [showFilters, setShowFilters] = useState(false);
@@ -90,7 +90,7 @@ export function Sites() {
             });
         } else {
             const site: Site = {
-                id: `site-${Date.now()}`,
+                id: `site-${crypto.randomUUID()}`,
                 name: formData.name,
                 address: formData.address,
                 city: formData.city,
