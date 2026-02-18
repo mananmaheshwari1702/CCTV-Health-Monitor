@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { User, Mail, Shield, Smartphone, Moon, Sun, Lock, LogOut, Camera, Save, X, Edit2, MapPin, Briefcase, Trash2, Clock, Calendar, CheckCircle } from 'lucide-react';
-import { Card, CardHeader, CardBody, Button, useToast } from '../components/ui';
+import { Card, CardHeader, CardBody, Button, useToast, ConfirmModal } from '../components/ui';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../context/ThemeContext';
 
@@ -32,6 +32,7 @@ export function Profile() {
         }
     };
     const [isEditing, setIsEditing] = useState(false);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [formData, setFormData] = useState(() => ({
         name: user?.name ?? '',
@@ -448,7 +449,7 @@ export function Profile() {
                             Securely sign out of your account on this device. You will need to sign in again to access your dashboard.
                         </p>
                         <button
-                            onClick={logout}
+                            onClick={() => setIsLogoutModalOpen(true)}
                             className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 rounded-xl font-semibold text-sm hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
                         >
                             <LogOut className="w-4 h-4" />
@@ -457,6 +458,16 @@ export function Profile() {
                     </div>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                onConfirm={logout}
+                title="Sign Out"
+                message="Are you sure you want to sign out?"
+                confirmText="Sign Out"
+                cancelText="Cancel"
+            />
         </div>
     );
 }

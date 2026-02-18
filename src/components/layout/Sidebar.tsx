@@ -18,6 +18,7 @@ import {
     X,
     LogOut,
 } from 'lucide-react';
+import { ConfirmModal } from '../ui/Modal';
 
 interface SidebarProps {
     collapsed: boolean;
@@ -40,6 +41,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose
     const location = useLocation();
     const { user, logout } = useAuth();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
     const navItems = allNavItems.filter(item =>
         user && item.roles.includes(user.role)
@@ -132,7 +134,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose
                                 </NavLink>
                                 <div className="border-t border-slate-700 my-1"></div>
                                 <button
-                                    onClick={logout}
+                                    onClick={() => setIsLogoutModalOpen(true)}
                                     className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-slate-700 hover:text-red-300"
                                 >
                                     <LogOut className="w-4 h-4" />
@@ -186,6 +188,16 @@ export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose
                     <ChevronLeft className="w-4 h-4" />
                 )}
             </button>
+
+            <ConfirmModal
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                onConfirm={logout}
+                title="Sign Out"
+                message="Are you sure you want to sign out?"
+                confirmText="Sign Out"
+                cancelText="Cancel"
+            />
         </aside>
     );
 }

@@ -10,6 +10,7 @@ import {
     Menu,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { ConfirmModal } from '../ui/Modal';
 
 interface HeaderProps {
     onMobileMenuToggle?: () => void;
@@ -30,6 +31,7 @@ export function Header({ onMobileMenuToggle, sidebarCollapsed }: HeaderProps) {
     const { user, logout } = useAuth();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
     const currentTitle = Object.entries(pageTitle).find(([path]) =>
         location.pathname.startsWith(path)
@@ -164,8 +166,8 @@ export function Header({ onMobileMenuToggle, sidebarCollapsed }: HeaderProps) {
                                 <hr className="my-2 border-slate-100 dark:border-slate-800" />
                                 <button
                                     onClick={() => {
-                                        logout();
                                         setUserMenuOpen(false);
+                                        setIsLogoutModalOpen(true);
                                     }}
                                     className="flex w-full items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
                                 >
@@ -177,6 +179,16 @@ export function Header({ onMobileMenuToggle, sidebarCollapsed }: HeaderProps) {
                     </div>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                onConfirm={logout}
+                title="Sign Out"
+                message="Are you sure you want to sign out?"
+                confirmText="Sign Out"
+                cancelText="Cancel"
+            />
         </header>
     );
 }
