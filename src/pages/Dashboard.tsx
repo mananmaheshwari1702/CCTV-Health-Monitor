@@ -30,7 +30,7 @@ export function Dashboard() {
     const { tickets } = useTickets();
     const { alerts } = useAlerts();
     const { devices, sites } = useDevicesSites();
-    const { dashboardStats, dashboardConfig, updateDashboardConfig } = useSettings();
+    const { dashboardConfig, updateDashboardConfig } = useSettings();
     const [isConfigOpen, setIsConfigOpen] = React.useState(false);
 
     // Filter States

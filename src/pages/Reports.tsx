@@ -25,13 +25,22 @@ import {
     Select,
 } from '../components/ui';
 import { useToast } from '../components/ui';
-import { useSettings } from '../context/DataContext';
+import { useSettings, useDevicesSites, useTickets } from '../context/DataContext';
+import { useMemo } from 'react';
 import { reports } from '../data/mockData';
 
 export function Reports() {
     const [selectedPeriod, setSelectedPeriod] = useState('last_7_days');
     const toast = useToast();
-    const { dashboardStats } = useSettings();
+    const { devices } = useDevicesSites();
+    const { tickets } = useTickets();
+
+    const dashboardStats = useMemo(() => ({
+        totalDevices: devices.length,
+        onlineDevices: devices.filter(d => d.status === 'online').length,
+        openTickets: tickets.filter(t => t.status === 'open' || t.status === 'in_progress').length,
+        criticalTickets: tickets.filter(t => t.priority === 'critical' && t.status !== 'closed').length,
+    }), [devices, tickets]);
 
     const reportIcons = {
         health: TrendingUp,

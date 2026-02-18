@@ -293,6 +293,8 @@ export const dashboardStats: DashboardStats = {
     recordingMissing: 8,
     openTickets: 23,
     criticalTickets: 5,
+    resolutionRate: 94,
+    avgResponseTime: 2.4,
 };
 
 // Recent Alerts
