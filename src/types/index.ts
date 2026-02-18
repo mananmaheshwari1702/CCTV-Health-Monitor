@@ -180,3 +180,14 @@ export interface DashboardLayoutConfig {
     showLatestTickets: boolean;
     showQuickActions: boolean;
 }
+
+// Notification Types
+export interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    type: 'success' | 'warning' | 'error' | 'info';
+    timestamp: string;
+    read: boolean;
+    link?: string;
+}
