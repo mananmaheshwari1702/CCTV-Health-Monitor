@@ -35,6 +35,8 @@ import {
     StatusBadge,
     HealthBadge,
     Modal,
+    Input,
+    Select,
 } from '../components/ui';
 import { useTickets, useDevicesSites } from '../context/DataContext';
 import { deviceCameras, deviceStatsData, healthTimelineEvents, generateRecordingCalendar } from '../data/mockData';
@@ -170,6 +172,12 @@ export function DeviceDetail() {
 
     const [selectedRecording, setSelectedRecording] = useState<RecordingDay | null>(null);
     const [ticketCreated, setTicketCreated] = useState(false);
+    const [showCreateTicketModal, setShowCreateTicketModal] = useState(false);
+    const [newTicket, setNewTicket] = useState({
+        title: '',
+        description: '',
+        priority: 'medium',
+    });
     const [selectedMonth, setSelectedMonth] = useState(() => new Date(2026, 1, 1)); // Feb 2026
 
     // Stable callback for memoized calendar cells
@@ -299,6 +307,29 @@ export function DeviceDetail() {
             setTicketCreated(false);
             setSelectedRecording(null);
         }, 2000);
+    };
+
+    const handleCreateGeneralTicket = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!device) return;
+
+        addTicket({
+            id: `TKT-${crypto.randomUUID()}`,
+            title: newTicket.title,
+            description: newTicket.description,
+            priority: newTicket.priority as any,
+            status: 'open',
+            assignee: 'Unassigned',
+            deviceId: device.id,
+            deviceName: device.name,
+            siteName: device.siteName,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            comments: [],
+        });
+
+        setShowCreateTicketModal(false);
+        setNewTicket({ title: '', description: '', priority: 'medium' });
     };
 
     return (
@@ -720,7 +751,7 @@ export function DeviceDetail() {
             <Card>
                 <CardHeader
                     action={
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => setShowCreateTicketModal(true)}>
                             Create Ticket
                         </Button>
                     }
@@ -799,10 +830,7 @@ export function DeviceDetail() {
                                     Ticket Created
                                 </>
                             ) : (
-                                <>
-                                    <Tag className="w-4 h-4" />
-                                    Create Ticket
-                                </>
+                                'Create Ticket'
                             )}
                         </button>
                     </div>
@@ -850,6 +878,56 @@ export function DeviceDetail() {
                     </div>
                 )}
             </Modal>
-        </div>
+
+            {/* ─── General Ticket Modal ───────────────────────────────────── */}
+            <Modal
+                isOpen={showCreateTicketModal}
+                onClose={() => setShowCreateTicketModal(false)}
+                title="Create New Ticket"
+                size="md"
+                footer={
+                    <div className="flex justify-end gap-3">
+                        <Button variant="outline" onClick={() => setShowCreateTicketModal(false)}>Cancel</Button>
+                        <Button variant="primary" onClick={(e) => {
+                            handleCreateGeneralTicket(e as any);
+                        }}>Create Ticket</Button>
+                    </div>
+                }
+            >
+                <form onSubmit={handleCreateGeneralTicket} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Title</label>
+                        <Input
+                            value={newTicket.title}
+                            onChange={e => setNewTicket({ ...newTicket, title: e.target.value })}
+                            placeholder="Brief summary of the issue"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Description</label>
+                        <Input
+                            value={newTicket.description}
+                            onChange={e => setNewTicket({ ...newTicket, description: e.target.value })}
+                            placeholder="Detailed description"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Priority</label>
+                        <Select
+                            value={newTicket.priority}
+                            onChange={e => setNewTicket({ ...newTicket, priority: e.target.value })}
+                            options={[
+                                { value: 'low', label: 'Low' },
+                                { value: 'medium', label: 'Medium' },
+                                { value: 'high', label: 'High' },
+                                { value: 'critical', label: 'Critical' },
+                            ]}
+                        />
+                    </div>
+                </form>
+            </Modal>
+        </div >
     );
 }
