@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import {
     LayoutDashboard,
@@ -56,7 +56,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose
         >
             {/* Logo */}
             <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800">
-                <div className="flex items-center gap-3">
+                <Link to="/dashboard" className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-xl">
                         <Camera className="w-5 h-5 text-white" />
                     </div>
@@ -68,7 +68,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose
                             <p className="text-xs text-slate-400 dark:text-slate-300">Health Dashboard</p>
                         </div>
                     )}
-                </div>
+                </Link>
                 {/* Mobile close button */}
                 {mobileOpen && (
                     <button

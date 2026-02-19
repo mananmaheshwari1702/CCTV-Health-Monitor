@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Building2,
     MapPin,
@@ -36,10 +36,31 @@ import { PermissionGuard } from '../components/auth/PermissionGuard';
 
 export function Sites() {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { sites, devices, addSite, updateSite, deleteSite } = useDevicesSites();
-    const [searchQuery, setSearchQuery] = useState('');
+
+    // Initialize search from URL
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+
+    // Sync URL when search changes
+    const handleSearch = (query: string) => {
+        setSearchQuery(query);
+        if (query) {
+            setSearchParams({ search: query });
+            setShowFilters(true);
+        } else {
+            setSearchParams({});
+        }
+    };
+
+    // Listen to URL changes
+    useEffect(() => {
+        const query = searchParams.get('search') || '';
+        setSearchQuery(query);
+        if (query) setShowFilters(true);
+    }, [searchParams]);
     const [statusFilter, setStatusFilter] = useState('all');
-    const [showFilters, setShowFilters] = useState(false);
+    const [showFilters, setShowFilters] = useState(!!searchParams.get('search'));
     const [expandedSiteId, setExpandedSiteId] = useState<string | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedSite, setSelectedSite] = useState<Site | null>(null);
@@ -261,7 +282,8 @@ export function Sites() {
                         <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Search</label>
                         <SearchInput
                             placeholder="Search sites, cities..."
-                            onSearch={setSearchQuery}
+                            value={searchQuery}
+                            onSearch={handleSearch}
                         />
                     </div>
                     <div className="flex gap-3">

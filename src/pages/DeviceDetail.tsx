@@ -186,10 +186,23 @@ export function DeviceDetail() {
         .filter((e) => e.deviceId === deviceId)
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-    const recordingData = useMemo(
-        () => (deviceId ? generateRecordingCalendar(deviceId) : []),
-        [deviceId]
-    );
+    const recordingData = useMemo(() => {
+        if (!deviceId) return [];
+        const allData = generateRecordingCalendar(deviceId);
+
+        // Retention Policy: Data older than 1 year is deleted/unavailable
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        oneYearAgo.setHours(0, 0, 0, 0);
+
+        return allData.map(entry => {
+            const entryDate = new Date(entry.date);
+            if (entryDate < oneYearAgo) {
+                return { ...entry, status: 'no_data' as const };
+            }
+            return entry;
+        });
+    }, [deviceId]);
 
     // Optimize lookup for recording data to prevent rendering lag/crashes
     const recordingDataMap = useMemo(() => {
@@ -221,10 +234,14 @@ export function DeviceDetail() {
         return Array.from(map.entries());
     }, [recordingData]);
 
-    // Month boundaries: Feb 2025 → Feb 2026 (use year/month ints to avoid timezone bugs)
+    // Dynamic Month boundaries based on Retention (1 Year)
+    const currentDate = new Date();
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
     const selectedYM = selectedMonth.getFullYear() * 12 + selectedMonth.getMonth();
-    const earliestYM = 2025 * 12 + 1;  // Feb 2025
-    const latestYM = 2026 * 12 + 1;    // Feb 2026
+    const earliestYM = oneYearAgo.getFullYear() * 12 + oneYearAgo.getMonth();
+    const latestYM = currentDate.getFullYear() * 12 + currentDate.getMonth();
 
     const canGoPrev = selectedYM > earliestYM;
     const canGoNext = selectedYM < latestYM;
@@ -632,19 +649,56 @@ export function DeviceDetail() {
 
                             {/* Monthly Summary Bar */}
                             {(() => {
-                                const monthDates = new Set(dateRange);
-                                const monthEntries = recordingData.filter(r => monthDates.has(r.date));
-                                const total = monthEntries.length;
-                                if (total === 0) return null;
-                                const available = monthEntries.filter(r => r.status === 'available').length;
-                                const missing = monthEntries.filter(r => r.status === 'missing').length;
-                                // noData is implicit rest
-                                const pctAvail = Math.round((available / total) * 100);
-                                const pctMissing = Math.round((missing / total) * 100);
+                                // Strict Retention Logic: Calculate Summary only for the valid retention window
+                                // Valid Window = [max(MonthStart, 1YearAgo), min(MonthEnd, Today)]
+
+                                const now = new Date();
+                                const oneYearAgo = new Date();
+                                oneYearAgo.setFullYear(now.getFullYear() - 1);
+                                oneYearAgo.setHours(0, 0, 0, 0);
+                                now.setHours(23, 59, 59, 999); // Include today
+
+                                const monthStart = new Date(dateRange[0]);
+                                const monthEnd = new Date(dateRange[dateRange.length - 1]);
+                                monthEnd.setHours(23, 59, 59, 999);
+
+                                // Intersect ranges
+                                const start = monthStart > oneYearAgo ? monthStart : oneYearAgo;
+                                const end = monthEnd < now ? monthEnd : now;
+
+                                // If intersection is invalid (e.g. future month or too old), return empty/grey
+                                if (start > end) return null;
+
+                                const validDaysCount = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                                const totalCapacity = validDaysCount * cameras.length;
+
+                                if (totalCapacity <= 0) return null;
+
+                                // Filter recording data within strict window
+                                let available = 0;
+                                let missing = 0;
+
+                                // Iterate valid window days
+                                for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                                    const dateStr = d.toISOString().split('T')[0];
+                                    cameras.forEach(cam => {
+                                        const entry = recordingDataMap.get(`${cam.id}-${dateStr}`);
+                                        if (entry?.status === 'available') {
+                                            available++;
+                                        }
+                                        // Anything else in valid window is considered Missing (including explicit 'missing' or 'no_data')
+                                        else {
+                                            missing++;
+                                        }
+                                    });
+                                }
+
+                                const pctAvail = Math.round((available / totalCapacity) * 100);
+                                const pctMissing = Math.round((missing / totalCapacity) * 100);
                                 return (
                                     <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
                                         <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-                                            Monthly Summary (All Cameras)
+                                            Monthly Summary (Retention Period Only)
                                         </p>
                                         <div className="flex h-1.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
                                             <div className="bg-emerald-500" style={{ width: `${pctAvail}%` }} />

@@ -84,6 +84,15 @@ export function TicketDetail() {
                 <div className="flex gap-2">
                     <PermissionGuard requiredRole={['admin', 'manager', 'technician']}>
                         {/* Status Actions */}
+                        {(ticket.status === 'open' || ticket.status === 'in_progress') && (
+                            <Button
+                                variant="outline"
+                                icon={<Clock className="w-4 h-4" />}
+                                onClick={() => handleStatusChange('pending')}
+                            >
+                                Mark Pending
+                            </Button>
+                        )}
                         {ticket.status !== 'closed' && (
                             <Button
                                 variant={ticket.status === 'resolved' ? 'outline' : 'primary'}

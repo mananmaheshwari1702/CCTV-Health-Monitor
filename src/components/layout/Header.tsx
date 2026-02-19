@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import {
     Bell,
     Search,
@@ -8,8 +8,10 @@ import {
     LogOut,
     Settings,
     Menu,
+    X
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useDevicesSites } from '../../context/DevicesSitesContext';
 import { useNotifications } from '../../context/NotificationsContext';
 import { ConfirmModal } from '../ui/Modal';
 
@@ -20,7 +22,8 @@ interface HeaderProps {
 
 const pageTitle: Record<string, string> = {
     '/dashboard': 'Dashboard',
-    '/sites': 'Sites & Devices',
+    '/sites': 'Sites',
+    '/devices': 'Devices',
     '/tickets': 'Tickets',
     '/reports': 'Reports',
     '/users': 'Users & Roles',
@@ -31,16 +34,40 @@ const pageTitle: Record<string, string> = {
 };
 
 export function Header({ onMobileMenuToggle, sidebarCollapsed }: HeaderProps) {
+    const navigate = useNavigate();
     const location = useLocation();
     const { user, logout } = useAuth();
     const { unreadCount, notifications, markAllAsRead } = useNotifications();
+    const { devices, sites } = useDevicesSites();
+
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
+    // Search State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showSearchResults, setShowSearchResults] = useState(false);
+
     const currentTitle = Object.entries(pageTitle).find(([path]) =>
         location.pathname.startsWith(path)
     )?.[1] || 'Dashboard';
+
+    // Filter Logic
+    const searchResults = React.useMemo(() => {
+        if (!searchQuery.trim()) return { devices: [], sites: [] };
+
+        const query = searchQuery.toLowerCase();
+        return {
+            sites: sites.filter(s => s.name.toLowerCase().includes(query) || s.address.toLowerCase().includes(query)).slice(0, 3),
+            devices: devices.filter(d => d.name.toLowerCase().includes(query) || d.type.toLowerCase().includes(query)).slice(0, 3)
+        };
+    }, [searchQuery, sites, devices]);
+
+    const handleSearchSelect = (path: string) => {
+        setSearchQuery('');
+        setShowSearchResults(false);
+        navigate(path);
+    };
 
     return (
         <header
@@ -72,14 +99,79 @@ export function Header({ onMobileMenuToggle, sidebarCollapsed }: HeaderProps) {
                 {/* Right: Search + Notifications + User */}
                 <div className="flex items-center gap-4">
                     {/* Search */}
-                    <div className="hidden md:flex items-center">
+                    {/* Search */}
+                    <div className="hidden md:flex items-center relative z-50">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input
                                 type="text"
                                 placeholder="Search devices, sites..."
-                                className="w-64 pl-10 pr-4 py-2 text-sm bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                value={searchQuery}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setShowSearchResults(true);
+                                }}
+                                onFocus={() => setShowSearchResults(true)}
+                                onBlur={() => setTimeout(() => setShowSearchResults(false), 200)} // Delay to allow click
+                                className="w-64 pl-10 pr-10 py-2 text-sm bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                             />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            )}
+
+                            {/* Search Results Dropdown */}
+                            {showSearchResults && searchQuery && (searchResults.sites.length > 0 || searchResults.devices.length > 0) && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                                    {searchResults.sites.length > 0 && (
+                                        <div className="py-2">
+                                            <h4 className="px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Sites</h4>
+                                            {searchResults.sites.map(site => (
+                                                <button
+                                                    key={site.id}
+                                                    onMouseDown={(e) => e.preventDefault()}
+                                                    onClick={() => handleSearchSelect(`/sites?search=${encodeURIComponent(site.name)}`)}
+                                                    className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
+                                                >
+                                                    <div className="p-1 bg-blue-100 dark:bg-blue-900/30 rounded text-blue-600 dark:text-blue-400">
+                                                        <Search className="w-3 h-3" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-slate-900 dark:text-white">{site.name}</p>
+                                                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{site.address}</p>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {searchResults.devices.length > 0 && (
+                                        <div className="py-2 border-t border-slate-100 dark:border-slate-800">
+                                            <h4 className="px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Devices</h4>
+                                            {searchResults.devices.map(device => (
+                                                <button
+                                                    key={device.id}
+                                                    onMouseDown={(e) => e.preventDefault()}
+                                                    onClick={() => handleSearchSelect(`/devices/${device.id}`)}
+                                                    className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
+                                                >
+                                                    <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded text-emerald-600 dark:text-emerald-400">
+                                                        <Search className="w-3 h-3" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-slate-900 dark:text-white">{device.name}</p>
+                                                        <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{device.type} • {device.status}</p>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 
