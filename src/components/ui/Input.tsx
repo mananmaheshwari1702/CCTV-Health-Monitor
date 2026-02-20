@@ -39,6 +39,16 @@ export function Input({
           ${className}
         `}
                 {...props}
+                onClick={(e) => {
+                    if (props.type === 'date' || props.type === 'time' || props.type === 'datetime-local') {
+                        try {
+                            e.currentTarget.showPicker();
+                        } catch (err) {
+                            // ignore
+                        }
+                    }
+                    props.onClick?.(e);
+                }}
             />
             {error && <p className="mt-1.5 text-sm text-red-600">{error}</p>}
             {helperText && !error && (
