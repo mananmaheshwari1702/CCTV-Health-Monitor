@@ -17,6 +17,7 @@ export function Users() {
     const [showFilters, setShowFilters] = useState(false);
     const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string }>({ isOpen: false, id: '' });
+    const [showRoleModal, setShowRoleModal] = useState(false);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -129,10 +130,26 @@ export function Users() {
     ];
 
     const rolePermissions = [
-        { role: 'Admin', desc: 'Full access', perms: ['All'] },
-        { role: 'Manager', desc: 'Manage teams', perms: ['View', 'Edit', 'Tickets'] },
-        { role: 'Technician', desc: 'Maintenance', perms: ['View', 'Edit Devices'] },
-        { role: 'Viewer', desc: 'Read-only', perms: ['View'] },
+        {
+            role: 'Admin',
+            desc: 'Full access to device management, user administration, and system configuration.',
+            perms: ['Internal Monitoring', 'User Management', 'System Configuration', 'Report Generation']
+        },
+        {
+            role: 'Manager',
+            desc: 'Can manage teams, view all reports, and handle escalated tickets.',
+            perms: ['Team Management', 'Ticket Escalation', 'Advanced Reporting', 'Device Overrides']
+        },
+        {
+            role: 'Technician',
+            desc: 'Focused on maintenance, device configuration, and resolving assigned tickets.',
+            perms: ['Device Configuration', 'Ticket Resolution', 'Basic Diagnostics', 'Maintenance Logs']
+        },
+        {
+            role: 'Viewer',
+            desc: 'Read-only access to dashboards, basic reports, and public statuses.',
+            perms: ['Dashboard Viewing', 'Basic Reports', 'Status Monitoring', 'Alert Subscriptions']
+        }
     ];
 
     return (
@@ -211,16 +228,13 @@ export function Users() {
                 <Table data={filteredUsers} columns={columns} keyExtractor={(user) => user.id} emptyMessage="No users found" />
 
                 <Card>
-                    <CardHeader action={<Button variant="ghost" size="sm" icon={<Shield className="w-4 h-4" />}>Manage Roles</Button>}>Roles & Permissions</CardHeader>
+                    <CardHeader action={<Button variant="ghost" size="sm" icon={<Shield className="w-4 h-4" />} onClick={() => setShowRoleModal(true)}>Manage Roles</Button>}>Roles & Permissions</CardHeader>
                     <CardBody>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             {rolePermissions.map((r) => (
                                 <div key={r.role} className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800">
-                                    <h4 className="font-semibold text-slate-900 dark:text-white">{r.role}</h4>
-                                    <p className="text-sm text-slate-500 dark:text-slate-300 mt-1">{r.desc}</p>
-                                    <div className="mt-3 flex flex-wrap gap-1">
-                                        {r.perms.map((p) => <span key={p} className="px-2 py-0.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs text-slate-600 dark:text-slate-300">{p}</span>)}
-                                    </div>
+                                    <h4 className="font-semibold text-slate-900 dark:text-white capitalize">{r.role}</h4>
+                                    <p className="text-sm text-slate-500 dark:text-slate-300 mt-1 line-clamp-2" title={r.desc}>{r.desc}</p>
                                 </div>
                             ))}
                         </div>
@@ -267,6 +281,40 @@ export function Users() {
                     confirmText="Delete"
                     variant="danger"
                 />
+
+                <Modal
+                    isOpen={showRoleModal}
+                    onClose={() => setShowRoleModal(false)}
+                    title="Roles & Permissions"
+                    size="lg"
+                    footer={<div className="flex justify-end"><Button onClick={() => setShowRoleModal(false)}>Close</Button></div>}
+                >
+                    <div className="space-y-4 pr-2">
+                        {rolePermissions.map((r) => (
+                            <div key={r.role} className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+                                    <Shield className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h4 className="font-semibold text-slate-900 dark:text-white capitalize">{r.role}</h4>
+                                    </div>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+                                        {r.desc}
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[13px]">
+                                        {r.perms.map(perm => (
+                                            <div key={perm} className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                                {perm}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Modal>
             </div>
         </PermissionGuard>
     );
