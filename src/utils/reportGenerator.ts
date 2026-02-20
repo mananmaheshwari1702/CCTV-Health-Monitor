@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
 import { format, subDays, subMonths, isAfter, isBefore, parseISO } from 'date-fns';
 import { Device, Site, Ticket, RecordingDay } from '../types';
-
+import { generateRecordingCalendar, deviceStatsData } from '../data/mockData';
 export interface ReportFilterParams {
     site: string;
     deviceType: string;
@@ -152,34 +152,79 @@ export const generateExcelReport = async (params: GenerateReportParams) => {
         case 'hdd_health':
             sheetName = 'HDD_Health';
             exportData = filteredDevs
-                .filter(d => d.type === 'dvr' || d.type === 'nvr')
-                .map(d => ({
-                    'Device Name': d.name,
-                    'Location / Region': d.siteName,
-                    'Status': d.status,
-                    // Mocking HDD specific stats since we don't have deeply nested real data for it
-                    'Storage Status': d.health === 'faulty' ? 'Critical' : 'Healthy',
-                    'Capacity Used %': Math.floor(Math.random() * 40) + 40 + '%',
-                    'SMART Status': d.health === 'faulty' ? 'Warning' : 'OK'
-                }));
+                .map(d => {
+                    const stats = deviceStatsData.find(s => s.deviceId === d.id);
+                    return {
+                        'Device Name': d.name,
+                        'Location / Region': d.siteName,
+                        'Status': d.status,
+                        // Using real dynamic data for HDD specific stats
+                        'Storage Status': d.health === 'faulty' ? 'Critical' : 'Healthy',
+                        'Capacity Used %': stats ? (100 - stats.hddFreePercent) + '%' : 'N/A',
+                        'SMART Status': d.health === 'faulty' ? 'Warning' : 'OK'
+                    };
+                });
             break;
 
         case 'recording_availability':
             sheetName = 'Recording_Availability';
-            exportData = filteredDevs.map(d => {
-                // Determine days span for accurate missing days mock based on range
-                const msInDay = 24 * 60 * 60 * 1000;
-                const daysInSpan = Math.round(Math.abs((end.getTime() - start.getTime()) / msInDay));
-                const missingMax = Math.min(daysInSpan, 10); // cap random missing to range span
+            filteredDevs.forEach(d => {
+                const calendar = generateRecordingCalendar(d.id);
+                // Filter calendar dates based on the requested start and end range
+                const filteredCalendar = calendar.filter(cDay => {
+                    const dayDate = parseISO(cDay.date);
+                    return isAfter(dayDate, start) && isBefore(dayDate, end);
+                });
 
-                return {
-                    'Device ID': d.id,
-                    'Device Name': d.name,
-                    'Type': d.type.toUpperCase(),
-                    'Location': d.siteName,
-                    'Recording Status': d.recordingStatus,
-                    'Days Monitored': daysInSpan,
-                    'Estimated Missing Days (Range)': d.recordingStatus === 'not_recording' ? Math.floor(Math.random() * missingMax) + 1 : 0
+                // Group the remaining days by camera
+                const cameraMap = new Map<string, RecordingDay[]>();
+                filteredCalendar.forEach(cDay => {
+                    if (!cameraMap.has(cDay.cameraId)) {
+                        cameraMap.set(cDay.cameraId, []);
+                    }
+                    cameraMap.get(cDay.cameraId)!.push(cDay);
+                });
+
+                if (cameraMap.size === 0) {
+                    // No cameras for device, output generic device row without camera details
+                    const msInDay = 24 * 60 * 60 * 1000;
+                    const daysInSpan = Math.round(Math.abs((end.getTime() - start.getTime()) / msInDay));
+                    exportData.push({
+                        'Device ID': d.id,
+                        'Device Name': d.name,
+                        'Type': d.type.toUpperCase(),
+                        'Location': d.siteName,
+                        'Camera ID': 'N/A',
+                        'Camera Name': 'N/A',
+                        'Days Monitored': daysInSpan,
+                        'Available Days': 0,
+                        'Missing Days': 0,
+                        'No Data Days': daysInSpan,
+                        'Compliance %': 'N/A'
+                    });
+                } else {
+                    cameraMap.forEach((days, cameraId) => {
+                        const cameraName = days[0]?.cameraName || 'Unknown';
+                        const daysMonitored = days.length;
+                        const availableDays = days.filter(day => day.status === 'available').length;
+                        const missingDays = days.filter(day => day.status === 'missing').length;
+                        const noDataDays = days.filter(day => day.status === 'no_data').length;
+                        const compliancePercent = daysMonitored > 0 ? ((availableDays / daysMonitored) * 100).toFixed(1) + '%' : 'N/A';
+
+                        exportData.push({
+                            'Device ID': d.id,
+                            'Device Name': d.name,
+                            'Type': d.type.toUpperCase(),
+                            'Location': d.siteName,
+                            'Camera ID': cameraId,
+                            'Camera Name': cameraName,
+                            'Days Monitored': daysMonitored,
+                            'Available Days': availableDays,
+                            'Missing Days': missingDays,
+                            'No Data Days': noDataDays,
+                            'Compliance %': compliancePercent
+                        });
+                    });
                 }
             });
             break;
@@ -223,6 +268,21 @@ export const generateExcelReport = async (params: GenerateReportParams) => {
             exportData = filteredDevs.map(d => {
                 const deviceTickets = filteredTickets.filter(t => t.deviceId === d.id);
                 const hasOpenTicket = deviceTickets.some(t => t.status !== 'closed' && t.status !== 'resolved');
+                const stats = deviceStatsData.find(s => s.deviceId === d.id);
+
+                // calculate explicit missing days across all cameras inside the date range
+                const calendar = generateRecordingCalendar(d.id);
+                const filteredCalendar = calendar.filter(cDay => {
+                    const dayDate = parseISO(cDay.date);
+                    return isAfter(dayDate, start) && isBefore(dayDate, end);
+                });
+
+                let missingDaysCount = 0;
+                let availableDaysCount = 0;
+                filteredCalendar.forEach(c => {
+                    if (c.status === 'missing' || c.status === 'no_data') missingDaysCount++;
+                    if (c.status === 'available') availableDaysCount++;
+                });
 
                 return {
                     'Device ID': d.id,
@@ -230,11 +290,11 @@ export const generateExcelReport = async (params: GenerateReportParams) => {
                     'Device Type': d.type.toUpperCase(),
                     'Location / Region': d.siteName,
                     'Status': d.status,
-                    'Error Duration': d.status === 'offline' ? '2 hrs 15 mins' : 'N/A', // Mock error duration
-                    'Uptime %': d.status === 'online' ? '99.9%' : '85.4%', // Mock uptime
+                    'Error Duration': d.status === 'offline' ? '2 hrs 15 mins' : 'N/A', // Static error fallback
+                    'Uptime %': stats ? stats.uptimePercent + '%' : 'N/A', // Real dynamic uptime
                     'Issue Type': d.status === 'offline' ? 'Network Timeout' : (d.health === 'degraded' ? 'Storage Warning' : 'None'),
-                    'Recording Available': d.recordingStatus === 'recording' ? 'Yes' : 'No',
-                    'Missing Days': d.recordingStatus === 'recording' ? 0 : Math.floor(Math.random() * 5) + 1,
+                    'Recording Available': availableDaysCount > 0 ? 'Yes' : 'No',
+                    'Missing Days': missingDaysCount,
                     'Ticket ID': hasOpenTicket ? deviceTickets[0].id : 'N/A',
                     'Last Seen Online': format(parseISO(d.lastSeen), 'yyyy-MM-dd HH:mm:ss')
                 };

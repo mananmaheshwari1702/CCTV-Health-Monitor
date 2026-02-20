@@ -219,7 +219,7 @@ export function ManualDownloadTab() {
                                 ]}
                                 value={deviceType}
                                 onChange={(e) => setDeviceType(e.target.value)}
-                                disabled={reportType === 'dvr_nvr_health' || reportType === 'camera_health' || reportType === 'hdd_health'}
+                                disabled={reportType === 'dvr_nvr_health' || reportType === 'camera_health'}
                             />
                             <Select
                                 label="Current Status"
