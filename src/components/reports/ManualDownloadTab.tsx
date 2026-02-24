@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardBody, CardFooter, Button, Select, Input, Badge } from '../ui';
 import { FileText, Download, Calendar, Search, Filter } from 'lucide-react';
 import { useToast } from '../ui';
-import { generateExcelReport } from '../../utils/reportGenerator';
-import { useDevicesSites, useTickets } from '../../context/DataContext';
+import { generateExcelReport, triggerBlobDownload } from '../../utils/reportGenerator';
+import { useDevicesSites, useTickets, useReports } from '../../context/DataContext';
 import { useAuth } from '../../hooks/useAuth';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -14,6 +14,7 @@ export function ManualDownloadTab() {
     const { devices, sites } = useDevicesSites();
     const { tickets } = useTickets();
     const { user } = useAuth();
+    const { addGeneratedReport } = useReports();
 
     const [reportType, setReportType] = useState('consolidated');
     const [duration, setDuration] = useState('last_3_months');
@@ -29,7 +30,7 @@ export function ManualDownloadTab() {
 
     const [isGenerating, setIsGenerating] = useState(false);
 
-    const handleGenerate = async () => {
+    const handleGenerate = () => {
         // Validate custom dates if selected
         if (duration === 'custom') {
             if (!startDate || !endDate) {
@@ -57,7 +58,7 @@ export function ManualDownloadTab() {
         toast.info('Generating report...');
 
         try {
-            await generateExcelReport({
+            const result = generateExcelReport({
                 type: reportType,
                 duration,
                 startDate,
@@ -72,6 +73,46 @@ export function ManualDownloadTab() {
                 data: { devices, sites, tickets },
                 userSites: user?.role === 'admin' ? [] : user?.sites || []
             });
+
+            // Add entry to history
+            const generatedAt = new Date().toISOString();
+
+            let dateRangeStr = '';
+            if (duration === 'custom') dateRangeStr = `${startDate} to ${endDate}`;
+            else if (duration === 'all_data') dateRangeStr = 'All Available Data';
+            else dateRangeStr = duration.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+            const typeLabels: Record<string, string> = {
+                'consolidated': 'Consolidated Health',
+                'dvr_nvr_health': 'DVR/NVR Health',
+                'camera_health': 'Camera Health',
+                'hdd_health': 'HDD/Storage Health',
+                'recording_availability': 'Recording Availability',
+                'ticket_log': 'Ticket / Maintenance Log'
+            };
+
+            // Estimate file size based on the exported buffer length
+            const approximateSize = result?.excelBuffer?.length ? `${(result.excelBuffer.length / 1024).toFixed(1)} KB` : '1.2 MB';
+
+            addGeneratedReport({
+                id: `rep-${Date.now()}`,
+                name: `Manual Export: ${typeLabels[reportType] || reportType}`,
+                type: typeLabels[reportType] || reportType,
+                format: 'xlsx',
+                dateRange: dateRangeStr,
+                generatedAt,
+                generatedBy: user?.name || 'Manual Request',
+                status: 'ready',
+                size: approximateSize,
+                excelBuffer: result?.excelBuffer, // Passes the binary to context for Blob creation
+                fileName: result?.fileName
+            });
+
+            // Explicitly fire the native browser download side-effect
+            if (result?.excelBuffer && result?.fileName) {
+                triggerBlobDownload(result.excelBuffer, result.fileName);
+            }
+
             toast.success('Report generation complete.');
         } catch (error: any) {
             console.error('Report generation failed:', error);

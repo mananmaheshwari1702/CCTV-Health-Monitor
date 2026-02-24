@@ -11,6 +11,7 @@ import { DevicesSitesProvider } from './context/DevicesSitesContext';
 import { TicketsProvider } from './context/TicketsContext';
 import { AlertsProvider } from './context/AlertsContext';
 import { NotificationsProvider } from './context/NotificationsContext';
+import { ReportsProvider } from './context/ReportsContext';
 import { ToastProvider } from './components/ui';
 
 import { useAuth } from './hooks/useAuth';
@@ -38,51 +39,53 @@ function App() {
               <TicketsProvider>
                 <AlertsProvider>
                   <NotificationsProvider>
-                    <BrowserRouter>
-                      <ToastProvider>
-                        <Routes>
-                          {/* Public Route */}
-                          <Route path="/login" element={<Login />} />
+                    <ReportsProvider>
+                      <BrowserRouter>
+                        <ToastProvider>
+                          <Routes>
+                            {/* Public Route */}
+                            <Route path="/login" element={<Login />} />
 
-                          {/* Protected Routes with Layout */}
-                          <Route element={
-                            <ProtectedRoute>
-                              <Layout />
-                            </ProtectedRoute>
-                          }>
-                            <Route path="/dashboard" element={<Dashboard />} />
-                            <Route path="/sites" element={<Sites />} />
-                            <Route path="/sites/device/:deviceId" element={<DeviceDetail />} />
-                            <Route path="/devices" element={<Devices />} />
-                            <Route path="/devices/:deviceId" element={<DeviceDetail />} />
-                            <Route path="/tickets" element={<Tickets />} />
-                            <Route path="/tickets/:ticketId" element={<TicketDetail />} />
-                            <Route path="/alerts" element={<Alerts />} />
-                            <Route path="/notifications" element={<Notifications />} />
-                            <Route element={<RoleProtectedRoute allowedRoles={['admin', 'manager', 'technician']} />}>
-                              <Route path="/reports" element={<Reports />} />
+                            {/* Protected Routes with Layout */}
+                            <Route element={
+                              <ProtectedRoute>
+                                <Layout />
+                              </ProtectedRoute>
+                            }>
+                              <Route path="/dashboard" element={<Dashboard />} />
+                              <Route path="/sites" element={<Sites />} />
+                              <Route path="/sites/device/:deviceId" element={<DeviceDetail />} />
+                              <Route path="/devices" element={<Devices />} />
+                              <Route path="/devices/:deviceId" element={<DeviceDetail />} />
+                              <Route path="/tickets" element={<Tickets />} />
+                              <Route path="/tickets/:ticketId" element={<TicketDetail />} />
+                              <Route path="/alerts" element={<Alerts />} />
+                              <Route path="/notifications" element={<Notifications />} />
+                              <Route element={<RoleProtectedRoute allowedRoles={['admin', 'manager', 'technician']} />}>
+                                <Route path="/reports" element={<Reports />} />
+                              </Route>
+
+                              {/* Admin Only Routes */}
+                              <Route element={<RoleProtectedRoute allowedRoles={['admin']} />}>
+                                <Route path="/users" element={<Users />} />
+                              </Route>
+
+                              {/* Admin & Manager Routes */}
+                              <Route element={<RoleProtectedRoute allowedRoles={['admin', 'manager']} />}>
+                                <Route path="/settings" element={<Settings />} />
+                              </Route>
+
+                              {/* Profile Route - Accessible to all authenticated users */}
+                              <Route path="/profile" element={<Profile />} />
                             </Route>
 
-                            {/* Admin Only Routes */}
-                            <Route element={<RoleProtectedRoute allowedRoles={['admin']} />}>
-                              <Route path="/users" element={<Users />} />
-                            </Route>
-
-                            {/* Admin & Manager Routes */}
-                            <Route element={<RoleProtectedRoute allowedRoles={['admin', 'manager']} />}>
-                              <Route path="/settings" element={<Settings />} />
-                            </Route>
-
-                            {/* Profile Route - Accessible to all authenticated users */}
-                            <Route path="/profile" element={<Profile />} />
-                          </Route>
-
-                          {/* Default Redirect */}
-                          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                        </Routes>
-                      </ToastProvider>
-                    </BrowserRouter>
+                            {/* Default Redirect */}
+                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                          </Routes>
+                        </ToastProvider>
+                      </BrowserRouter>
+                    </ReportsProvider>
                   </NotificationsProvider>
                 </AlertsProvider>
               </TicketsProvider>

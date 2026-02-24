@@ -92,7 +92,7 @@ const filterDevices = (devices: Device[], filters: ReportFilterParams, userSites
     });
 };
 
-export const generateExcelReport = async (params: GenerateReportParams) => {
+export const generateExcelReport = (params: GenerateReportParams) => {
     const { type, duration, startDate, endDate, filters, data, userSites } = params;
     const { start, end } = getDateRange(duration, startDate, endDate);
     const { devices, tickets } = data;
@@ -324,6 +324,24 @@ export const generateExcelReport = async (params: GenerateReportParams) => {
     const generatedStamp = format(new Date(), 'yyyyMMdd_HHmmss');
     const fileName = `${type.toUpperCase()}_${dateStr}_generated${generatedStamp}.xlsx`;
 
-    // Download
-    XLSX.writeFile(workbook, fileName);
+    // Create the buffered array directly for history and download
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+    return { excelBuffer, fileName };
+};
+
+export const triggerBlobDownload = (excelBuffer: ArrayBuffer, fileName: string) => {
+    // Trigger the native browser download via Blob URL
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const fileUrl = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Revoke the temporary local link
+    URL.revokeObjectURL(fileUrl);
 };

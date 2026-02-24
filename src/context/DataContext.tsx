@@ -10,6 +10,7 @@ export { useAlerts } from './AlertsContext';
 export { useDevicesSites } from './DevicesSitesContext';
 export { useUsers } from './UsersContext';
 export { useSettings } from './SettingsContext';
+export { useReports } from './ReportsContext';
 
 // ── Backward-compatible façade ───────────────────────────────────────────
 // Composes all 5 domain hooks into a single object matching the old API.

@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardHeader, CardBody, Button, Badge } from '../ui';
 import { Plus, Clock, Users, Mail, Settings, Play, Trash2 } from 'lucide-react';
 import { useToast } from '../ui';
+import { useReports } from '../../context/DataContext';
 
 // Mock scheduled reports data
 const mockScheduledReports = [
@@ -36,6 +37,7 @@ const mockScheduledReports = [
 
 export function ScheduledReportsTab() {
     const toast = useToast();
+    const { addGeneratedReport } = useReports();
 
     return (
         <div className="space-y-6">
@@ -77,7 +79,7 @@ export function ScheduledReportsTab() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-6 w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-slate-200 dark:border-slate-700/50">
-                                    <div className="flex flex-col items-end hidden md:flex">
+                                    <div className="hidden md:flex md:flex-col md:items-end">
                                         <span className="text-xs text-slate-500 dark:text-slate-400">Next Run</span>
                                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                                             {new Date(report.nextRun).toLocaleString(undefined, {
@@ -86,7 +88,9 @@ export function ScheduledReportsTab() {
                                         </span>
                                     </div>
                                     <div className="flex gap-2 w-full md:w-auto justify-end">
-                                        <Button variant="ghost" size="sm" onClick={() => toast.success('Report generated and emailed to ' + report.recipients.length + ' recipient(s).')}>
+                                        <Button variant="ghost" size="sm" onClick={() => {
+                                            toast.info(`Scheduled report generation coming soon.`);
+                                        }}>
                                             Run Now
                                         </Button>
                                         <Button variant="ghost" size="sm" onClick={() => toast.info('Edit schedule coming soon.')}>
