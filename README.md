@@ -82,8 +82,3 @@ src/
 The application uses a simulated backend. You can test different roles by switching users in the mock authentication flow or checking the `src/data/mockData.ts` file for available user profiles.
 
 - **Admin User**: Full access
-- **Tech User**: Restricted access
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
